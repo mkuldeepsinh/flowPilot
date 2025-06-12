@@ -2,102 +2,72 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white via-blue-50 to-yellow-50">
+      <div className="flex flex-col md:flex-row w-full h-full min-h-screen">
+        {/* Left side with image and logo, hidden on small screens */}
+        <div className="flex-1 flex-col items-center justify-center bg-blue-100 relative hidden md:flex">
+          <div className="absolute top-8 left-8">
+            <Image src="/logo.png" alt="Finance Logo" width={128} height={128} />
+          </div>
+          <div className="relative w-[320px] h-[220px] md:w-[500px] md:h-[340px]">
             <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+              src="/laptop.png"
+              alt="Finance Management Laptop Preview"
+              fill
+              className="object-contain drop-shadow-2xl"
+              priority
             />
-            Deploy now
-          </a>
+          </div>
+        </div>
+        {/* Right side with text */}
+        <div className="flex-1 flex flex-col justify-center items-start px-8 md:px-20 py-16 bg-white w-full">
+          {/* Show logo at top on small screens */}
+          <div className="flex items-center mb-8 md:hidden">
+            <Image
+              src="/logo.png"
+              alt="Finance Logo"
+              width={48}
+              height={48}
+              className="mr-3"
+            />
+            <span className="text-orange-500 font-bold text-2xl">Finance</span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-6">
+            Empowering <span className="text-blue-700">Finance Companies</span>
+          </h1>
+          <p className="text-lg text-gray-700 mb-8 max-w-xl">
+            Welcome to Finance, the modern platform designed specifically for
+            finance companies to streamline operations, manage client portfolios,
+            and deliver exceptional financial services. Our solution helps your
+            team track investments, monitor transactions, and provide real-time
+            analytics—all in one secure, easy-to-use dashboard.
+          </p>
+          <ul className="space-y-3 mb-10">
+            <li className="flex items-center text-base text-gray-700">
+              <span className="text-orange-500 mr-2">✔</span>{" "}
+              Centralized client and account management
+            </li>
+            <li className="flex items-center text-base text-gray-700">
+              <span className="text-orange-500 mr-2">✔</span>{" "}
+              Real-time portfolio tracking and reporting
+            </li>
+            <li className="flex items-center text-base text-gray-700">
+              <span className="text-orange-500 mr-2">✔</span>{" "}
+              Secure, compliant, and scalable infrastructure
+            </li>
+            <li className="flex items-center text-base text-gray-700">
+              <span className="text-orange-500 mr-2">✔</span>{" "}
+              Customizable dashboards for your business needs
+            </li>
+          </ul>
           <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/login"
+            className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8 py-3 rounded-lg shadow transition-colors text-lg"
           >
-            Read our docs
+            Login
           </a>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
 }
