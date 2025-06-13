@@ -61,7 +61,13 @@ export default function Home() {
             </li>
           </ul>
           <a
-            href="/signup"
+            href="/dashboard"
+            className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8 py-3 rounded-lg shadow transition-colors text-lg"
+          >
+            Sign Up
+          </a>
+          <a
+            href="/dashboard/transaction"
             className="inline-block bg-blue-700 hover:bg-blue-800 text-white font-semibold px-8 py-3 rounded-lg shadow transition-colors text-lg"
           >
             Sign Up
