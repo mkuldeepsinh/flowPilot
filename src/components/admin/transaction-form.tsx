@@ -17,7 +17,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { IconPlus } from "@tabler/icons-react"
+import { IconPlus, IconPencil } from "@tabler/icons-react"
 
 const formSchema = z.object({
   description: z.string().min(1, "Description is required"),
@@ -46,13 +45,40 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
-export function TransactionForm() {
-  const [open, setOpen] = React.useState(false)
+interface TransactionFormProps {
+  transaction?: {
+    _id: string
+    description: string
+    amount: number
+    type: "income" | "expense"
+    category: string
+    status: "Completed" | "Pending"
+    account: string
+    date: string
+    client?: string | null
+    vendor?: string | null
+    invoice?: string | null
+    department?: string | null
+  }
+  onSuccess?: () => void
+  mode?: 'create' | 'edit'
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function TransactionForm({ transaction, onSuccess, mode = 'create', open, onOpenChange }: TransactionFormProps) {
   const [error, setError] = React.useState<string | null>(null)
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: transaction ? {
+      ...transaction,
+      amount: transaction.amount != null ? transaction.amount.toString() : '',
+      client: transaction.client || '',
+      vendor: transaction.vendor || '',
+      invoice: transaction.invoice || '',
+      department: transaction.department || '',
+    } : {
       description: "",
       amount: "",
       type: "expense",
@@ -67,29 +93,51 @@ export function TransactionForm() {
     },
   })
 
+  React.useEffect(() => {
+    if (transaction) {
+      form.reset({
+        ...transaction,
+        amount: transaction.amount != null ? transaction.amount.toString() : '',
+        client: transaction.client || '',
+        vendor: transaction.vendor || '',
+        invoice: transaction.invoice || '',
+        department: transaction.department || '',
+      })
+    }
+  }, [transaction, form])
+
   async function onSubmit(values: FormData) {
     try {
       setError(null)
-      const response = await fetch('/api/transactions', {
-        method: 'POST',
+      const url = mode === 'edit' && transaction 
+        ? `/api/transactions/${transaction._id}`
+        : '/api/transactions'
+      
+      const response = await fetch(url, {
+        method: mode === 'edit' ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          ...values,
+          amount: parseFloat(values.amount),
+          department: values.department === '' ? undefined : values.department,
+          client: values.client === '' ? undefined : values.client,
+          vendor: values.vendor === '' ? undefined : values.vendor,
+          invoice: values.invoice === '' ? undefined : values.invoice,
+        }),
       })
 
       const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.details || 'Failed to create transaction')
+        throw new Error(data.details || `Failed to ${mode} transaction`)
       }
 
       // Close the dialog and reset the form
-      setOpen(false)
+      onOpenChange?.(false)
       form.reset()
-
-      // Refresh the page to show the new transaction
-      window.location.reload()
+      onSuccess?.()
     } catch (error) {
       console.error('Error submitting form:', error)
       setError(error instanceof Error ? error.message : 'An unexpected error occurred')
@@ -97,16 +145,10 @@ export function TransactionForm() {
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <IconPlus className="h-4 w-4" />
-          <span>New Transaction</span>
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Add New Transaction</DialogTitle>
+          <DialogTitle>{mode === 'edit' ? 'Edit Transaction' : 'Add New Transaction'}</DialogTitle>
         </DialogHeader>
         {error && (
           <div className="bg-destructive/15 text-destructive text-sm p-3 rounded-md mb-4">
@@ -323,10 +365,12 @@ export function TransactionForm() {
               />
             </div>
             <div className="flex justify-end gap-4">
-              <Button variant="outline" onClick={() => setOpen(false)}>
+              <Button variant="outline" onClick={() => onOpenChange?.(false)}>
                 Cancel
               </Button>
-              <Button type="submit">Save Transaction</Button>
+              <Button type="submit">
+                {mode === 'edit' ? 'Update Transaction' : 'Save Transaction'}
+              </Button>
             </div>
           </form>
         </Form>

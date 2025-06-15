@@ -24,6 +24,8 @@ import {
   IconDotsVertical,
   IconLayoutColumns,
   IconLoader,
+  IconPencil,
+  IconPlus,
 } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -89,8 +91,8 @@ export const schema = z.object({
   description: z.string(),
   category: z.string(),
   amount: z.number(),
-  type: z.string(),
-  status: z.string(),
+  type: z.enum(["income", "expense"]),
+  status: z.enum(["Completed", "Pending"]),
   account: z.string(),
   color: z.string(),
   client: z.string().optional(),
@@ -223,6 +225,8 @@ export default function TransactionTable({ data: initialData }: TransactionTable
   const [selectedTransaction, setSelectedTransaction] = React.useState<z.infer<typeof schema> | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
   const [transactionToDelete, setTransactionToDelete] = React.useState<z.infer<typeof schema> | null>(null);
+  const [transactionToEdit, setTransactionToEdit] = React.useState<z.infer<typeof schema> | null>(null);
+  const [isNewTransactionFormOpen, setIsNewTransactionFormOpen] = React.useState(false);
 
   const handleDelete = async (transaction: z.infer<typeof schema>) => {
     try {
@@ -247,6 +251,20 @@ export default function TransactionTable({ data: initialData }: TransactionTable
       console.error('Error deleting transaction:', error);
       alert(error instanceof Error ? error.message : 'Failed to delete transaction');
     }
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh the data after successful edit
+    fetch('/api/transactions')
+      .then(res => res.json())
+      .then(data => {
+        if (data.data) {
+          setData(data.data);
+        }
+      })
+      .catch(error => {
+        console.error('Error refreshing data:', error);
+      });
   };
 
   const table = useReactTable<z.infer<typeof schema>>({
@@ -331,35 +349,44 @@ export default function TransactionTable({ data: initialData }: TransactionTable
         {
           id: "actions",
           cell: ({ row }: { row: { original: z.infer<typeof schema> } }) => (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
-                  size="icon"
-                >
-                  <IconDotsVertical />
-                  <span className="sr-only">Open menu</span>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-32">
-                <DropdownMenuItem 
-                  onClick={() => {
-                    setSelectedTransaction(row.original);
-                    setIsDrawerOpen(true);
-                  }}
-                >
-                  View Details
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem 
-                  variant="destructive"
-                  onClick={() => setTransactionToDelete(row.original)}
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTransactionToEdit(row.original)}
+                className="h-8 w-8 p-0"
+              >
+                <IconPencil className="h-4 w-4" />
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="data-[state=open]:bg-muted text-muted-foreground flex size-8"
+                    size="icon"
+                  >
+                    <IconDotsVertical />
+                    <span className="sr-only">Open menu</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-32">
+                  <DropdownMenuItem 
+                    onClick={() => {
+                      setSelectedTransaction(row.original);
+                      setIsDrawerOpen(true);
+                    }}
+                  >
+                    View Details
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                    variant="destructive"
+                    onClick={() => setTransactionToDelete(row.original)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           ),
         },
       ],
@@ -407,7 +434,10 @@ export default function TransactionTable({ data: initialData }: TransactionTable
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2 mt-4">
-          <TransactionForm />
+          <Button variant="outline" size="sm" className="gap-2" onClick={() => setIsNewTransactionFormOpen(true)}>
+            <IconPlus className="h-4 w-4" />
+            <span>New Transaction</span>
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -591,6 +621,27 @@ export default function TransactionTable({ data: initialData }: TransactionTable
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {transactionToEdit && (
+        <TransactionForm
+          transaction={transactionToEdit}
+          mode="edit"
+          onSuccess={() => {
+            setTransactionToEdit(null);
+            handleEditSuccess();
+          }}
+          open={!!transactionToEdit}
+          onOpenChange={(open) => !open && setTransactionToEdit(null)}
+        />
+      )}
+      <TransactionForm
+        mode="create"
+        onSuccess={() => {
+          setIsNewTransactionFormOpen(false);
+          handleEditSuccess();
+        }}
+        open={isNewTransactionFormOpen}
+        onOpenChange={setIsNewTransactionFormOpen}
+      />
     </div>
   )
 }
