@@ -54,8 +54,8 @@ export async function getDashboardTransactions() {
 
     const transactions = await Transaction.find({ companyId: MOCK_COMPANY['id'] }).lean();
     
-    const formattedTransactions: TransactionSchema[] = transactions.map((t: any, index) => ({
-      id: index + 1,
+    const formattedTransactions: TransactionSchema[] = transactions.map((t: any) => ({
+      _id: t._id.toString(),
       date: new Date(t.date).toISOString().split('T')[0],
       description: t.description,
       category: t.category,

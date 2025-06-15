@@ -72,9 +72,19 @@ import {
 } from "@/components/ui/drawer"
 import { Separator } from "@/components/ui/separator"
 import { TransactionForm } from "./transaction-form"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export const schema = z.object({
-  id: z.number(),
+  _id: z.string(),
   date: z.string(),
   description: z.string(),
   category: z.string(),
@@ -202,7 +212,7 @@ function TransactionDetailDrawer({
 }
 
 export default function TransactionTable({ data: initialData }: TransactionTableProps) {
-  const [data] = React.useState(() => initialData)
+  const [data, setData] = React.useState(() => initialData)
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -210,9 +220,34 @@ export default function TransactionTable({ data: initialData }: TransactionTable
     pageIndex: 0,
     pageSize: 10,
   })
-
   const [selectedTransaction, setSelectedTransaction] = React.useState<z.infer<typeof schema> | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [transactionToDelete, setTransactionToDelete] = React.useState<z.infer<typeof schema> | null>(null);
+
+  const handleDelete = async (transaction: z.infer<typeof schema>) => {
+    try {
+      const response = await fetch(`/api/transactions/${transaction._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        cache: 'no-store'
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to delete transaction');
+      }
+
+      // Remove the deleted transaction from the local state
+      setData(currentData => currentData.filter((t) => t._id !== transaction._id));
+      setTransactionToDelete(null);
+    } catch (error) {
+      console.error('Error deleting transaction:', error);
+      alert(error instanceof Error ? error.message : 'Failed to delete transaction');
+    }
+  };
 
   const table = useReactTable<z.infer<typeof schema>>({
     data,
@@ -317,13 +352,18 @@ export default function TransactionTable({ data: initialData }: TransactionTable
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+                <DropdownMenuItem 
+                  variant="destructive"
+                  onClick={() => setTransactionToDelete(row.original)}
+                >
+                  Delete
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ),
         },
       ],
-      [categoryColors] // categoryColors is a dependency
+      [categoryColors]
     ),
     state: {
       sorting,
@@ -531,6 +571,26 @@ export default function TransactionTable({ data: initialData }: TransactionTable
           }
         }}
       />
+      <AlertDialog open={!!transactionToDelete} onOpenChange={(open) => !open && setTransactionToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the transaction
+              {transactionToDelete && ` for ${transactionToDelete.description}`}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => transactionToDelete && handleDelete(transactionToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
