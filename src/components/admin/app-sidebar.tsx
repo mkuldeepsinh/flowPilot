@@ -42,7 +42,8 @@ const data = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard",
+      
       icon: IconDashboard,
     },
     {
@@ -51,18 +52,18 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Transaction",
+      url: "/dashboard/transaction",
       icon: IconChartBar,
     },
     {
       title: "Projects",
-      url: "#",
+      url: "/dashboard/project",
       icon: IconFolder,
     },
     {
       title: "Team",
-      url: "#",
+      url: "/dashboard/team",
       icon: IconUsers,
     },
   ],
@@ -150,7 +151,7 @@ const data = {
   ],
 }
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ companyName, fullUserProfile, ...props }: React.ComponentProps<typeof Sidebar> & { companyName: string, fullUserProfile: any }) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -162,7 +163,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">Acme Inc.</span>
+                <span className="text-base font-semibold">{companyName}</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -174,7 +175,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={fullUserProfile} />
       </SidebarFooter>
     </Sidebar>
   )

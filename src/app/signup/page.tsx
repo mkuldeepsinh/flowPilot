@@ -117,8 +117,10 @@ export default function AuthPage() {
         setMessage("Login successful!")
         console.log("User data:", data.user)
       
-        // Redirect to hero page
-        router.push("/dashboard")  // Change `/hero` to your actual hero page route
+        // Redirect to home page
+        router.push("/")
+      } else {
+        setMessage(data.message || "Login failed. Please try again.")
       }
       
     } catch (error) {
@@ -126,8 +128,6 @@ export default function AuthPage() {
     } finally {
       setIsLoading(false)
     }
-
-    
   }
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -165,13 +165,11 @@ export default function AuthPage() {
       
         console.log("User data:", data.user)
       
-        // Redirect to hero page
-        // router.push("/dashboard")
+        // Redirect to home page
+        router.push("/")
+      } else {
+        setMessage(data.message || "Registration failed. Please try again.")
       }
-      
-        else {
-            setMessage(data.message || "Registration failed. Please try again.")
-        }
     } catch (error) {
       setMessage("Network error. Please try again.")
     } finally {

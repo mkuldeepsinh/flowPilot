@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import dbConnect from "@/dbConfing/dbConfing"
 import Transaction from "@/models/transactionModel"
 import mongoose from 'mongoose'
+import { cookies } from 'next/headers';
+import { verify } from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 export const dynamic = 'force-dynamic'
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ) {
   try {
@@ -21,8 +25,22 @@ export async function DELETE(
       )
     }
 
-    // TODO: Get companyId from session/auth
-    const companyId = "COMP_1749635591705_32zce2bpo" // Temporary mock company ID
+    const token = (await cookies()).get('token')?.value || '';
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
+    }
+
+    let decodedToken: any;
+    try {
+      decodedToken = verify(token, JWT_SECRET);
+    } catch (error) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+    }
+
+    const companyId = decodedToken.companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: 'Company ID not found in token' }, { status: 400 });
+    }
 
     const deletedTransaction = await Transaction.findOneAndDelete({
       _id: new mongoose.Types.ObjectId(transactionId),
@@ -47,7 +65,7 @@ export async function DELETE(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   context: { params: { id: string } }
 ) {
   try {
@@ -62,8 +80,22 @@ export async function PUT(
       )
     }
 
-    // TODO: Get companyId from session/auth
-    const companyId = "COMP_1749635591705_32zce2bpo" // Temporary mock company ID
+    const token = (await cookies()).get('token')?.value || '';
+    if (!token) {
+      return NextResponse.json({ error: 'Unauthorized: No token provided' }, { status: 401 });
+    }
+
+    let decodedToken: any;
+    try {
+      decodedToken = verify(token, JWT_SECRET);
+    } catch (error) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
+    }
+
+    const companyId = decodedToken.companyId;
+    if (!companyId) {
+      return NextResponse.json({ error: 'Company ID not found in token' }, { status: 400 });
+    }
 
     const updatedTransaction = await Transaction.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(transactionId), companyId },

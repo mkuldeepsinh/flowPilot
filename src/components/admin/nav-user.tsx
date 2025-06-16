@@ -28,6 +28,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { UserAccountDrawer } from "./user-account-drawer"
 
 export function NavUser({
   user,
@@ -36,9 +39,36 @@ export function NavUser({
     name: string
     email: string
     avatar: string
+    role: string
+    companyId: string
+    companyName: string
+    lastLogin?: string
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+  const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false)
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/user/logout", {
+        method: "POST",
+      })
+
+      if (response.ok) {
+        console.log("Logged out successfully")
+        router.push("/") // Redirect to home/login page
+      } else {
+        console.error("Logout failed")
+      }
+    } catch (error) {
+      console.error("Network error during logout", error)
+    }
+  }
+
+  const handleAccountClick = () => {
+    setIsAccountDrawerOpen(true)
+  }
 
   return (
     <SidebarMenu>
@@ -84,7 +114,7 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleAccountClick}>
                 <IconUserCircle />
                 Account
               </DropdownMenuItem>
@@ -98,13 +128,14 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      <UserAccountDrawer user={user} isOpen={isAccountDrawerOpen} onOpenChange={setIsAccountDrawerOpen} />
     </SidebarMenu>
   )
 }
