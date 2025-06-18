@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Building2, Users, LogIn, UserPlus, Shield, Lock, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { signIn } from 'next-auth/react'
 
 interface FormData {
   email: string
@@ -110,7 +111,7 @@ export default function AuthPage() {
       if (response.ok) {
         setMessage("Login successful!")
         console.log("User data:", data.user)
-        router.push("/dashboard")
+        router.push("/")
       }
     } catch (error) {
       setMessage("Network error. Please try again.")
@@ -121,10 +122,15 @@ export default function AuthPage() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!validateForm()) return
+    setMessage("")
+    console.log('Signup: form submitted')
+
+    if (!validateForm()) {
+      console.log('Signup: validation failed', errors)
+      return
+    }
 
     setIsLoading(true)
-    setMessage("")
 
     try {
       const signupData = {
@@ -136,6 +142,7 @@ export default function AuthPage() {
           ? { companyName: formData.companyName }
           : { companyId: formData.companyId, role: formData.role }),
       }
+      console.log('Signup: sending data', signupData)
 
       const response = await fetch("/api/user/signup", {
         method: "POST",
@@ -144,6 +151,7 @@ export default function AuthPage() {
       })
 
       const data = await response.json()
+      console.log('Signup: API response', data)
 
       if (response.ok) {
         if (signupType === "new") {
@@ -151,12 +159,30 @@ export default function AuthPage() {
         } else {
           setMessage("Registration successful!")
         }
-        console.log("User data:", data.user)
+        console.log('Signup: user created, attempting sign in')
+
+        // Sign in the user after successful signup
+        const result = await signIn('credentials', {
+          email: formData.email,
+          password: formData.password,
+          redirect: false,
+        })
+        console.log('Signup: signIn result', result)
+
+        if (result?.error) {
+          throw new Error('Failed to sign in after signup')
+        }
+
+        // Redirect to home page with full URL
+        console.log('Signup: redirecting to home')
+        window.location.href = 'http://localhost:3000/'
       } else {
         setMessage(data.message || "Registration failed. Please try again.")
+        console.log('Signup: registration failed', data.message)
       }
     } catch (error) {
       setMessage("Network error. Please try again.")
+      console.log('Signup: network or other error', error)
     } finally {
       setIsLoading(false)
     }
