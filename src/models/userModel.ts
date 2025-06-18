@@ -1,6 +1,21 @@
-// models/User.js
-import mongoose from 'mongoose';
+import mongoose, { Document, Model, CallbackError } from 'mongoose';
 import bcrypt from 'bcryptjs';
+
+export interface IUser extends Document {
+  _id: string;
+  email: string;
+  password: string;
+  name?: string;
+  role: 'admin' | 'employee';
+  companyId: string;
+  companyName: string;
+  isActive: boolean;
+  emailVerified?: Date;
+  lastLogin: Date;
+  createdAt: Date;
+  updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -10,6 +25,10 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  name: {
+    type: String,
+    trim: true
   },
   password: {
     type: String,
@@ -34,6 +53,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
+  emailVerified: {
+    type: Date,
+    default: null
+  },
   lastLogin: {
     type: Date,
     default: null
@@ -53,19 +76,26 @@ userSchema.pre('save', async function(next) {
     this.password = hashedPassword;
     next();
   } catch (error) {
-    next(error);
+    next(error as CallbackError);
   }
 });
 
 // Instance method to compare passwords
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
 // Instance method to update last login
-userSchema.methods.updateLastLogin = function() {
+userSchema.methods.updateLastLogin = function(): Promise<Document> {
   this.lastLogin = new Date();
   return this.save();
 };
 
-export default mongoose.models.User || mongoose.model('User', userSchema);
+// Static method to find user by email
+userSchema.statics.findByEmail = function(email: string) {
+  return this.findOne({ email, isActive: true });
+};
+
+const User = (mongoose.models.User || mongoose.model<IUser>('User', userSchema)) as Model<IUser>;
+
+export default User;

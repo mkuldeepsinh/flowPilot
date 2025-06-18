@@ -6,29 +6,38 @@ import User from '@/models/userModel';
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('Fetching user profile...');
+    
+    // Get the session
     const session = await getServerSession(authOptions);
-
+    
     if (!session?.user?.email) {
+      console.log('No session or email found');
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
+    // Connect to database
     await dbConnect();
-
-    const user = await User.findOne({ email: session.user.email });
-
+    
+    // Find user
+    const user = await User.findOne({ email: session.user.email, isActive: true });
+    
     if (!user) {
+      console.log('User not found:', session.user.email);
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
+    console.log('User found:', user._id);
+
+    // Return user profile
     return NextResponse.json({
-      id: user._id,
-      name: user.name,
-      username: user.username,
       email: user.email,
       role: user.role,
       companyId: user.companyId,
       companyName: user.companyName,
-      lastLogin: user.lastLogin
+      isActive: user.isActive,
+      lastLogin: user.lastLogin,
+      createdAt: user.createdAt
     });
 
   } catch (error) {

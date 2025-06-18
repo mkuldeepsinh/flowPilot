@@ -14,6 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Building2, Users, LogIn, UserPlus, Shield, Lock, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { signIn } from 'next-auth/react'
+import User from '@/models/userModel'
 
 interface FormData {
   email: string
@@ -97,23 +98,27 @@ export default function AuthPage() {
     setMessage("")
 
     try {
-      const response = await fetch("/api/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
+      console.log('Attempting login...')
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false,
+        callbackUrl: '/profile'
       })
 
-      const data = await response.json()
+      console.log('SignIn result:', result)
 
-      if (response.ok) {
-        setMessage("Login successful!")
-        console.log("User data:", data.user)
-        router.push("/")
+      if (result?.error) {
+        setMessage(result.error)
+      } else if (result?.url) {
+        console.log('Login successful, redirecting to:', result.url)
+        router.push(result.url)
+      } else {
+        console.log('Login successful, redirecting to profile...')
+        router.push('/profile')
       }
     } catch (error) {
+      console.error('Login error:', error)
       setMessage("Network error. Please try again.")
     } finally {
       setIsLoading(false)
@@ -123,16 +128,13 @@ export default function AuthPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
     setMessage("")
-    console.log('Signup: form submitted')
 
-    if (!validateForm()) {
-      console.log('Signup: validation failed', errors)
-      return
-    }
+    if (!validateForm()) return
 
     setIsLoading(true)
 
     try {
+      console.log('Starting signup process...')
       const signupData = {
         email: formData.email,
         password: formData.password,
@@ -142,8 +144,8 @@ export default function AuthPage() {
           ? { companyName: formData.companyName }
           : { companyId: formData.companyId, role: formData.role }),
       }
-      console.log('Signup: sending data', signupData)
 
+      console.log('Sending signup data...')
       const response = await fetch("/api/user/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -151,38 +153,48 @@ export default function AuthPage() {
       })
 
       const data = await response.json()
-      console.log('Signup: API response', data)
+      console.log('Signup response:', data)
 
       if (response.ok) {
+        let successMessage = "Registration successful!"
         if (signupType === "new") {
-          setMessage(`Company created successfully! Your Company ID is: ${data.companyId}`)
-        } else {
-          setMessage("Registration successful!")
+          successMessage = `Company created successfully! Your Company ID is: ${data.companyId}`
         }
-        console.log('Signup: user created, attempting sign in')
+        setMessage(successMessage)
 
-        // Sign in the user after successful signup
+        // Wait a moment before attempting to sign in
+        await new Promise(resolve => setTimeout(resolve, 1000))
+
+        console.log('Signing in after successful signup...')
         const result = await signIn('credentials', {
           email: formData.email,
           password: formData.password,
           redirect: false,
+          callbackUrl: '/profile'
         })
-        console.log('Signup: signIn result', result)
+
+        console.log('SignIn result:', result)
 
         if (result?.error) {
-          throw new Error('Failed to sign in after signup')
+          console.error('Auto-login failed:', result.error)
+          setMessage(`${successMessage} Please log in manually.`)
+          setActiveTab('login')
+          return
         }
 
-        // Redirect to home page with full URL
-        console.log('Signup: redirecting to home')
-        window.location.href = 'http://localhost:3000/'
+        if (result?.url) {
+          console.log('Signup and login successful, redirecting to:', result.url)
+          router.push(result.url)
+        } else {
+          console.log('Signup and login successful, redirecting to profile...')
+          router.push('/profile')
+        }
       } else {
         setMessage(data.message || "Registration failed. Please try again.")
-        console.log('Signup: registration failed', data.message)
       }
     } catch (error) {
-      setMessage("Network error. Please try again.")
-      console.log('Signup: network or other error', error)
+      console.error('Signup error:', error)
+      setMessage(error instanceof Error ? error.message : "Network error. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -249,45 +261,47 @@ export default function AuthPage() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="login" className="space-y-4 mt-6">
+              {message && (
+                <Alert className="mt-4">
+                  <AlertDescription>{message}</AlertDescription>
+                </Alert>
+              )}
+
+              <TabsContent value="login" className="mt-6">
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="login-email" className="text-gray-700">Email</Label>
+                    <Label htmlFor="email">Email</Label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="login-email"
+                        id="email"
                         type="email"
                         placeholder="Enter your email"
                         value={formData.email}
                         onChange={(e) => handleInputChange("email", e.target.value)}
-                        className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
+                        className="pl-10"
                       />
                     </div>
                     {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="login-password" className="text-gray-700">Password</Label>
+                    <Label htmlFor="password">Password</Label>
                     <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                       <Input
-                        id="login-password"
+                        id="password"
                         type="password"
                         placeholder="Enter your password"
                         value={formData.password}
                         onChange={(e) => handleInputChange("password", e.target.value)}
-                        className={`pl-10 ${errors.password ? "border-red-500" : ""}`}
+                        className="pl-10"
                       />
                     </div>
                     {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
                   </div>
 
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -300,178 +314,150 @@ export default function AuthPage() {
                 </form>
               </TabsContent>
 
-              <TabsContent value="signup" className="space-y-4 mt-6">
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <Label className="text-gray-700">Company Registration Type</Label>
+              <TabsContent value="signup" className="mt-6">
+                <form onSubmit={handleSignup} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange("password", e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">Confirm Password</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                    {errors.confirmPassword && (
+                      <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label>Company Type</Label>
                     <RadioGroup
                       value={signupType}
-                      onValueChange={(value) => {
-                        setSignupType(value as "new" | "existing")
-                        resetForm()
-                      }}
+                      onValueChange={(value) => setSignupType(value as "new" | "existing")}
                       className="flex flex-col space-y-2"
                     >
-                      <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                        <RadioGroupItem value="new" id="new-company" />
-                        <Label htmlFor="new-company" className="flex items-center gap-2 cursor-pointer">
-                          <Building2 className="h-5 w-5 text-blue-600" />
-                          <div>
-                            <span className="font-medium">New Company Registration</span>
-                            <p className="text-sm text-gray-500">Create a new company account</p>
-                          </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="new" id="new" />
+                        <Label htmlFor="new" className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4" />
+                          New Company
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 transition-colors duration-200">
-                        <RadioGroupItem value="existing" id="existing-company" />
-                        <Label htmlFor="existing-company" className="flex items-center gap-2 cursor-pointer">
-                          <Users className="h-5 w-5 text-indigo-600" />
-                          <div>
-                            <span className="font-medium">Join Existing Company</span>
-                            <p className="text-sm text-gray-500">Join with company ID</p>
-                          </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="existing" id="existing" />
+                        <Label htmlFor="existing" className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Existing Company
                         </Label>
                       </div>
                     </RadioGroup>
                   </div>
 
-                  <form onSubmit={handleSignup} className="space-y-4">
-                    {signupType === "new" ? (
+                  {signupType === "new" ? (
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Company Name</Label>
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                        <Input
+                          id="companyName"
+                          placeholder="Enter company name"
+                          value={formData.companyName}
+                          onChange={(e) => handleInputChange("companyName", e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                      {errors.companyName && (
+                        <p className="text-sm text-red-500">{errors.companyName}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
                       <div className="space-y-2">
-                        <Label htmlFor="company-name" className="text-gray-700">Company Name</Label>
+                        <Label htmlFor="companyId">Company ID</Label>
                         <div className="relative">
-                          <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                          <Building2 className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                           <Input
-                            id="company-name"
-                            placeholder="Enter company name"
-                            value={formData.companyName}
-                            onChange={(e) => handleInputChange("companyName", e.target.value)}
-                            className={`pl-10 ${errors.companyName ? "border-red-500" : ""}`}
+                            id="companyId"
+                            placeholder="Enter company ID"
+                            value={formData.companyId}
+                            onChange={(e) => handleInputChange("companyId", e.target.value)}
+                            className="pl-10"
                           />
                         </div>
-                        {errors.companyName && <p className="text-sm text-red-500">{errors.companyName}</p>}
+                        {errors.companyId && (
+                          <p className="text-sm text-red-500">{errors.companyId}</p>
+                        )}
                       </div>
-                    ) : (
+
+                      <div className="space-y-2">
+                        <Label htmlFor="role">Role</Label>
+                        <Select
+                          value={formData.role}
+                          onValueChange={(value) => handleInputChange("role", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select your role" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="employee">Employee</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
+                      </div>
+                    </>
+                  )}
+
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? (
                       <>
-                        <div className="space-y-2">
-                          <Label htmlFor="company-id" className="text-gray-700">Company ID</Label>
-                          <div className="relative">
-                            <Building2 className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Input
-                              id="company-id"
-                              placeholder="Enter company ID provided by admin"
-                              value={formData.companyId}
-                              onChange={(e) => handleInputChange("companyId", e.target.value)}
-                              className={`pl-10 ${errors.companyId ? "border-red-500" : ""}`}
-                            />
-                          </div>
-                          {errors.companyId && <p className="text-sm text-red-500">{errors.companyId}</p>}
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="role" className="text-gray-700">Role</Label>
-                          <Select value={formData.role} onValueChange={(value) => handleInputChange("role", value)}>
-                            <SelectTrigger className={errors.role ? "border-red-500" : ""}>
-                              <SelectValue placeholder="Select your role" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="admin">Admin</SelectItem>
-                              <SelectItem value="employee">Employee</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
-                        </div>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Creating account...
                       </>
+                    ) : (
+                      "Create Account"
                     )}
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email" className="text-gray-700">Email</Label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        <Input
-                          id="signup-email"
-                          type="email"
-                          placeholder="Enter your email"
-                          value={formData.email}
-                          onChange={(e) => handleInputChange("email", e.target.value)}
-                          className={`pl-10 ${errors.email ? "border-red-500" : ""}`}
-                        />
-                      </div>
-                      {errors.email && <p className="text-sm text-red-500">{errors.email}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password" className="text-gray-700">Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        <Input
-                          id="signup-password"
-                          type="password"
-                          placeholder="Enter your password (min 6 characters)"
-                          value={formData.password}
-                          onChange={(e) => handleInputChange("password", e.target.value)}
-                          className={`pl-10 ${errors.password ? "border-red-500" : ""}`}
-                        />
-                      </div>
-                      {errors.password && <p className="text-sm text-red-500">{errors.password}</p>}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="confirm-password" className="text-gray-700">Confirm Password</Label>
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                        <Input
-                          id="confirm-password"
-                          type="password"
-                          placeholder="Confirm your password"
-                          value={formData.confirmPassword}
-                          onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                          className={`pl-10 ${errors.confirmPassword ? "border-red-500" : ""}`}
-                        />
-                      </div>
-                      {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword}</p>}
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating account...
-                        </>
-                      ) : signupType === "new" ? (
-                        "Create Company & Admin Account"
-                      ) : (
-                        "Join Company"
-                      )}
-                    </Button>
-                  </form>
-                </div>
+                  </Button>
+                </form>
               </TabsContent>
             </Tabs>
-
-            {message && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Alert
-                  className={`mt-4 ${
-                    message.includes("successful") ? "border-green-500 bg-green-50" : "border-red-500 bg-red-50"
-                  }`}
-                >
-                  <AlertDescription
-                    className={message.includes("successful") ? "text-green-700" : "text-red-700"}
-                  >
-                    {message}
-                  </AlertDescription>
-                </Alert>
-              </motion.div>
-            )}
           </CardContent>
         </Card>
       </motion.div>
