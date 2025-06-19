@@ -36,7 +36,8 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    await user.updateLastLogin();
+    user.lastLogin = new Date();
+    await user.save();
 
     // Create JWT token
     const token = sign(
