@@ -15,14 +15,14 @@ export default function Page() {
     console.log('Dashboard Page: Starting fetch for company ID');
     const fetchCompanyId = async () => {
       try {
-        const response = await fetch("/api/user/profile", { credentials: "include" })
+        const response = await fetch("/api/user/me")
         console.log('Dashboard Page: API response status:', response.status);
         const data = await response.json()
         console.log('Dashboard Page: API response data:', data);
 
-        if (response.ok && data.companyId) {
-          setCompanyId(data.companyId)
-          console.log('Dashboard Page: Company ID set to:', data.companyId);
+        if (response.ok && data.user && data.user.companyId) {
+          setCompanyId(data.user.companyId)
+          console.log('Dashboard Page: Company ID set to:', data.user.companyId);
         } else {
           console.error("Dashboard Page: Failed to fetch user data:", data.message)
         }
