@@ -5,54 +5,17 @@ import { schema } from "@/components/admin/transaction-table";
 
 type TransactionSchema = z.infer<typeof schema>;
 
-// Mock data for development
-const MOCK_COMPANY = {
-  id: "COMP_1749635591705_32zce2bpo",
-  name: "Tech Solutions Inc",
-  logo: "/images/company-logo.png",
-  email: "contact@techsolutions.com",
-  address: "123 Tech Street, Silicon Valley, CA",
-  phone: "+1 (555) 123-4567"
-};
+// MOCK_COMPANY and MOCK_USER removed as we now fetch dynamic data
 
-const MOCK_USER = {
-  id: "USER_123456",
-  name: "John Doe",
-  email: "john.doe@techsolutions.com",
-  role: "admin",
-  avatar: "/images/user-avatar.png",
-  department: "Finance"
-};
+// getCompanyInfo and getUserInfo removed as they returned mock data
 
-export async function getCompanyInfo(companyId: string) {
-  try {
-    // TODO: Replace with actual database query
-    // For now, return mock data
-    return MOCK_COMPANY;
-  } catch (error) {
-    console.error('Error fetching company info:', error);
-    throw error;
-  }
-}
-
-export async function getUserInfo(userId: string) {
-  try {
-    // TODO: Replace with actual database query
-    // For now, return mock data
-    return MOCK_USER;
-  } catch (error) {
-    console.error('Error fetching user info:', error);
-    throw error;
-  }
-}
-
-export async function getDashboardTransactions() {
+export async function getDashboardTransactions(companyId: string) {
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(process.env.MONGO_URL!);
     }
 
-    const transactions = await Transaction.find({ companyId: MOCK_COMPANY['id'] }).lean();
+    const transactions = await Transaction.find({ companyId: companyId }).lean();
     
     const formattedTransactions: TransactionSchema[] = transactions.map((t: any) => ({
       _id: t._id.toString(),
@@ -109,6 +72,4 @@ export async function getDashboardStats(companyId: string) {
   }
 }
 
-// Export mock data for direct use if needed
-export const mockCompany = MOCK_COMPANY;
-export const mockUser = MOCK_USER; 
+// mockCompany and mockUser exports removed as they are no longer needed 

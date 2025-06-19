@@ -32,43 +32,6 @@ import {
 
 export const description = "An interactive area chart showing monthly profit and cost"
 
-const monthlyData = [
-  // 2023 Data
-  { date: "2023-01-01", profit: 150, cost: 80 },
-  { date: "2023-02-01", profit: 370, cost: 90 },
-  { date: "2023-03-01", profit: 190, cost: 100 },
-  { date: "2023-04-01", profit: 210, cost: 110 },
-  { date: "2023-05-01", profit: 230, cost: 420 },
-  { date: "2023-06-01", profit: 450, cost: 130 },
-  { date: "2023-07-01", profit: 270, cost: 140 },
-  { date: "2023-08-01", profit: 290, cost: 150 },
-  { date: "2023-09-01", profit: 310, cost: 160 },
-  { date: "2023-10-01", profit: 730, cost: 170 },
-  { date: "2023-11-01", profit: 350, cost: 480 },
-  { date: "2023-12-01", profit: 370, cost: 190 },
-  // 2024 Data
-  { date: "2024-01-01", profit: 220, cost: 120 },
-  { date: "2024-02-01", profit: 240, cost: 230 },
-  { date: "2024-03-01", profit: 200, cost: 110 },
-  { date: "2024-04-01", profit: 480, cost: 150 },
-  { date: "2024-05-01", profit: 300, cost: 160 },
-  { date: "2024-06-01", profit: 320, cost: 170 },
-  { date: "2024-07-01", profit: 290, cost: 240 },
-  { date: "2024-08-01", profit: 450, cost: 180 },
-  { date: "2024-09-01", profit: 370, cost: 190 },
-  { date: "2024-10-01", profit: 390, cost: 300 },
-  { date: "2024-11-01", profit: 410, cost: 210 },
-  { date: "2024-12-01", profit: 430, cost: 220 },
-  // 2025 Data
-  { date: "2025-01-01", profit: 500, cost: 180 },
-  { date: "2025-02-01", profit: 220, cost: 190 },
-  { date: "2025-03-01", profit: 340, cost: 400 },
-  { date: "2025-04-01", profit: 460, cost: 210 },
-  { date: "2025-05-01", profit: 380, cost: 220 },
-  { date: "2025-06-01", profit: 400, cost: 230 },
-  // Add more months for 2025 as needed
-];
-
 const chartConfig = {
   profit: {
     label: "Profit",
@@ -80,30 +43,72 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-const currentYear = new Date().getFullYear();
-const previousYear1 = currentYear - 1;
-const previousYear2 = currentYear - 2;
+const currentYear = new Date().getFullYear()
+const previousYear1 = currentYear - 1
+const previousYear2 = currentYear - 2
 
-export function ChartAreaInteractive() {
+export function ChartAreaInteractive({ companyId }: { companyId: string }) {
   const isMobile = useIsMobile()
-  const [timeRange, setTimeRange] = React.useState("currentYear")
+  const [timeRange, setTimeRange] = React.useState<"currentYear"|"previousYear1"|"previousYear2">("currentYear")
+  const [transactions, setTransactions] = React.useState<Array<{ date: string; amount: number; type: string }>>([])
 
-  // Removed useEffect for isMobile as yearly filters are less granular
+  // fetch all transactions once
+  React.useEffect(() => {
+    if (companyId) { // Only fetch if companyId is available
+      console.log('Client: Fetching transactions for companyId:', companyId);
+      fetch("/api/transactions") // API now handles companyId from token
+        .then(res => {
+          if (!res.ok) {
+            console.error('Client: API response not OK:', res.status, res.statusText);
+            return res.json().then(err => Promise.reject(err));
+          }
+          return res.json();
+        })
+        .then((data) => {
+          console.log('Client: Received transaction data:', data);
+          setTransactions(data);
+        })
+        .catch(error => {
+          console.error('Client: Error fetching transactions:', error);
+        });
+    }
+  }, [companyId]) // Add companyId to dependency array
 
-  const filteredData = monthlyData.filter((item) => {
-    const date = new Date(item.date)
-    const year = date.getFullYear()
-    if (timeRange === "currentYear") {
-      return year === currentYear
-    }
-    if (timeRange === "previousYear1") {
-      return year === previousYear1
-    }
-    if (timeRange === "previousYear2") {
-      return year === previousYear2
-    }
-    return false;
-  })
+  // determine selected year
+  const year = React.useMemo(() => {
+    if (timeRange === "previousYear1") return previousYear1
+    if (timeRange === "previousYear2") return previousYear2
+    return currentYear
+  }, [timeRange])
+
+  // aggregate monthly profit / cost
+  const monthlyData = React.useMemo(() => {
+    const base = Array.from({ length: 12 }, (_, i) => ({
+      date: new Date(year, i, 1).toISOString(),
+      profit: 0,
+      cost: 0,
+    }))
+    console.log('Chart: Initial monthlyData base:', base);
+    transactions.forEach(tx => {
+      console.log('Chart: Processing transaction:', tx);
+      const d = new Date(tx.date)
+      console.log('Chart: Transaction date object:', d);
+      console.log('Chart: Transaction year:', d.getFullYear(), 'Current year for aggregation:', year);
+      if (d.getFullYear() === year) {
+        const idx = d.getMonth()
+        console.log('Chart: Transaction month index:', idx, 'Type:', tx.type, 'Amount:', tx.amount);
+        if (tx.type === "income") {
+          base[idx].profit += Math.abs(tx.amount)
+          console.log('Chart: Added income to month', idx, 'New profit:', base[idx].profit);
+        } else if (tx.type === "expense") {
+          base[idx].cost += Math.abs(tx.amount)
+          console.log('Chart: Added expense to month', idx, 'New cost:', base[idx].cost);
+        }
+      }
+    })
+    console.log('Chart: Final aggregated monthlyData:', base);
+    return base
+  }, [transactions, year])
 
   const getCardDescription = () => {
     if (timeRange === "currentYear") {
@@ -112,24 +117,27 @@ export function ChartAreaInteractive() {
     if (timeRange === "previousYear1") {
       return `Showing data for Previous Year (${previousYear1})`
     }
-    if (timeRange === "previousYear2") {
-      return `Showing data for Previous Year (${previousYear2})`
-    }
-    return "Monthly Profit and Cost Data"
+    return `Showing data for Previous Year (${previousYear2})`
   }
 
   return (
     <Card className="@container/card">
       <CardHeader>
         <CardTitle>Profit & Cost Analysis</CardTitle>
-        <CardDescription>
-          {getCardDescription()}
-        </CardDescription>
+        <CardDescription>{getCardDescription()}</CardDescription>
         <CardAction>
           <ToggleGroup
             type="single"
             value={timeRange}
-            onValueChange={setTimeRange}
+            onValueChange={value => {
+              if (
+                value === "currentYear" ||
+                value === "previousYear1" ||
+                value === "previousYear2"
+              ) {
+                setTimeRange(value)
+              }
+            }}
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
@@ -137,7 +145,12 @@ export function ChartAreaInteractive() {
             <ToggleGroupItem value="previousYear1">Previous Year 1</ToggleGroupItem>
             <ToggleGroupItem value="previousYear2">Previous Year 2</ToggleGroupItem>
           </ToggleGroup>
-          <Select value={timeRange} onValueChange={setTimeRange}>
+          <Select
+            value={timeRange}
+            onValueChange={value =>
+              setTimeRange(value as "currentYear" | "previousYear1" | "previousYear2")
+            }
+          >
             <SelectTrigger
               className="flex w-48 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
               size="sm"
@@ -146,49 +159,24 @@ export function ChartAreaInteractive() {
               <SelectValue placeholder="Select Year" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
-              <SelectItem value="currentYear" className="rounded-lg">
-                Current Year ({currentYear})
-              </SelectItem>
-              <SelectItem value="previousYear1" className="rounded-lg">
-                Previous Year ({previousYear1})
-              </SelectItem>
-              <SelectItem value="previousYear2" className="rounded-lg">
-                Previous Year ({previousYear2})
-              </SelectItem>
+              <SelectItem value="currentYear">Current Year ({currentYear})</SelectItem>
+              <SelectItem value="previousYear1">Previous Year ({previousYear1})</SelectItem>
+              <SelectItem value="previousYear2">Previous Year ({previousYear2})</SelectItem>
             </SelectContent>
           </Select>
         </CardAction>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
-          <AreaChart data={filteredData}>
+        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+          <AreaChart data={monthlyData}>
             <defs>
               <linearGradient id="fillProfit" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor={chartConfig.profit.color}
-                  stopOpacity={1.0}
-                />
-                <stop
-                  offset="95%"
-                  stopColor={chartConfig.profit.color}
-                  stopOpacity={0.1}
-                />
+                <stop offset="5%" stopColor={chartConfig.profit.color} stopOpacity={1.0} />
+                <stop offset="95%" stopColor={chartConfig.profit.color} stopOpacity={0.1} />
               </linearGradient>
               <linearGradient id="fillCost" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor={chartConfig.cost.color}
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor={chartConfig.cost.color}
-                  stopOpacity={0.1}
-                />
+                <stop offset="5%" stopColor={chartConfig.cost.color} stopOpacity={0.8} />
+                <stop offset="95%" stopColor={chartConfig.cost.color} stopOpacity={0.1} />
               </linearGradient>
             </defs>
             <CartesianGrid vertical={false} />
@@ -197,25 +185,22 @@ export function ChartAreaInteractive() {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              minTickGap={5} // Adjusted for monthly view
-              tickFormatter={(value) => {
-                const date = new Date(value)
-                return date.toLocaleDateString("en-US", {
-                  month: "short",
-                })
-              }}
+              minTickGap={5}
+              tickFormatter={val =>
+                new Date(val).toLocaleDateString("en-US", { month: "short" })
+              }
             />
             <ChartTooltip
               cursor={false}
-              defaultIndex={isMobile ? -1 : filteredData.length > 1 ? 1 : 0} // Adjust default index
+              defaultIndex={isMobile ? -1 : 0}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("en-US", {
+                  labelFormatter={val =>
+                    new Date(val).toLocaleDateString("en-US", {
                       month: "long",
-                      year: "numeric", // Show year in tooltip
+                      year: "numeric",
                     })
-                  }}
+                  }
                   indicator="dot"
                 />
               }
