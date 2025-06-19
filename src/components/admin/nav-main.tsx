@@ -25,32 +25,13 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          <SidebarMenuItem className="flex items-center gap-2">
-            <SidebarMenuButton
-              tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
-            >
-              <IconCirclePlusFilled />
-              <span>Quick Create</span>
-            </SidebarMenuButton>
-            <Button
-              size="icon"
-              className="size-8 group-data-[collapsible=icon]:opacity-0"
-              variant="outline"
-            >
-              <IconMail />
-              <span className="sr-only">Inbox</span>
-            </Button>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        <SidebarMenu>
           {items.map((item) => {
             const router = useRouter();
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
+                <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)} className="modern-sidebar-btn">
+                  {item.icon && <item.icon className="modern-sidebar-icon" />}
+                  <span className="modern-sidebar-label">{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             );
@@ -60,3 +41,15 @@ export function NavMain({
     </SidebarGroup>
   )
 }
+
+<style jsx global>{`
+  .modern-sidebar-btn {
+    @apply flex items-center gap-3 px-4 py-2 rounded-lg font-medium text-base text-blue-900 bg-blue-50 hover:bg-blue-100 hover:text-blue-800 transition-all duration-200 shadow-sm;
+  }
+  .modern-sidebar-icon {
+    @apply w-6 h-6 text-indigo-600;
+  }
+  .modern-sidebar-label {
+    @apply text-lg font-semibold tracking-wide;
+  }
+`}</style>

@@ -34,16 +34,10 @@ import {
 } from "@/components/ui/sidebar"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
     {
       title: "Dashboard",
       url: "/dashboard",
-      
       icon: IconDashboard,
     },
     {
@@ -171,12 +165,7 @@ export function AppSidebar({ companyName, fullUserProfile, ...props }: React.Com
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={fullUserProfile} />
-      </SidebarFooter>
     </Sidebar>
   )
 }

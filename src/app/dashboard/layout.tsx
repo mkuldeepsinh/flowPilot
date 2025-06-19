@@ -64,7 +64,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
           {children}
         </div>
       </SidebarInset>

@@ -26,9 +26,9 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <div className="container mx-auto px-4">
-        <div className="flex h-16 items-center justify-between">
+    <nav className="sticky top-0 z-50 w-full mt-4">
+      <div className="mx-2 md:mx-6">
+        <div className="flex h-16 items-center justify-between rounded-2xl border bg-white/80 backdrop-blur-md shadow-lg px-4 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
