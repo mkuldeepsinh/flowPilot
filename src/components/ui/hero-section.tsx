@@ -94,14 +94,14 @@ export function HeroSection() {
             >
               Get Started
             </Button>
-            <Button
+            {/* <Button
               size="lg"
               variant="outline"
               className="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => router.push("/demo")}
             >
               Book a Demo
-            </Button>
+            </Button> */}
           </motion.div>
 
           {/* Feature Cards */}
