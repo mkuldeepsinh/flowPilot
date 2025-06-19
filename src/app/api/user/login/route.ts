@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '../../../../dbConfing/dbConfing';
 import User from '../../../../models/userModel';
-import { validateLoginData } from '../../../../helpers/validation';
+import { validateLoginData } from '@/helpers/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
-    await user.updateLastLogin();
+    user.lastLogin = new Date();
+    await user.save();
 
     return NextResponse.json({
       message: 'Login successful',
