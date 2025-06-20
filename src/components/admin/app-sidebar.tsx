@@ -60,6 +60,11 @@ const data = {
       url: "/dashboard/team",
       icon: IconUsers,
     },
+    {
+      title: "Employees Approval",
+      url: "/dashboard/employees",
+      icon: IconUsers,
+    },
   ],
   navClouds: [
     {

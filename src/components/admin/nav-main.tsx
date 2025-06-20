@@ -21,21 +21,19 @@ export function NavMain({
     icon?: Icon
   }[]
 }) {
+  const router = useRouter();
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => {
-            const router = useRouter();
-            return (
-              <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)} className="modern-sidebar-btn">
-                  {item.icon && <item.icon className="modern-sidebar-icon" />}
-                  <span className="modern-sidebar-label">{item.title}</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            );
-          })}
+          {items.map((item) => (
+            <SidebarMenuItem key={item.title}>
+              <SidebarMenuButton tooltip={item.title} onClick={() => router.push(item.url)} className="modern-sidebar-btn">
+                {item.icon && <item.icon className="modern-sidebar-icon" />}
+                <span className="modern-sidebar-label">{item.title}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

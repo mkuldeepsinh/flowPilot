@@ -56,6 +56,14 @@ export const authOptions: NextAuthOptions = {
             throw new Error('No user found with this email')
           }
 
+          if (!user.isApproved && !user.isRejected) {
+            throw new Error('Your account is pending approval. Please wait for an admin to approve your request.')
+          }
+
+          if (user.isRejected) {
+            throw new Error('Your account has been rejected. Please contact your company admin.')
+          }
+
           // Compare password using bcrypt
           const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
 

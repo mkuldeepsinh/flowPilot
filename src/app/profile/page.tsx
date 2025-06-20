@@ -13,7 +13,7 @@ import { motion } from 'framer-motion';
 
 interface UserProfile {
   email: string;
-  role: 'admin' | 'employee';
+  role: 'admin' | 'employee' | 'owner';
   companyId: string;
   companyName: string;
   isActive: boolean;
@@ -207,7 +207,7 @@ function ProfilePage() {
                   </Badge>
                 </motion.div>
 
-                {userProfile.role === 'admin' && (
+                {(userProfile.role === 'admin' || userProfile.role === 'owner') && (
                   <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}

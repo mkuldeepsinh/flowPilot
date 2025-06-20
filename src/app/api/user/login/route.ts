@@ -25,6 +25,20 @@ export async function POST(request: NextRequest) {
       }, { status: 401 });
     }
 
+    if (!user.isApproved && !user.isRejected) {
+      return NextResponse.json({
+        message: 'Pending approval',
+        status: 'pending'
+      }, { status: 403 });
+    }
+
+    if (user.isRejected) {
+      return NextResponse.json({
+        message: 'Rejected',
+        status: 'rejected'
+      }, { status: 403 });
+    }
+
     const isPasswordCorrect = await user.comparePassword(password);
     if (!isPasswordCorrect) {
       return NextResponse.json({ 
