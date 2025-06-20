@@ -156,41 +156,18 @@ export default function AuthPage() {
       console.log('Signup response:', data)
 
       if (response.ok) {
-        let successMessage = "Registration successful!"
+        let successMessage = "Registration successful!";
         if (signupType === "new") {
-          successMessage = `Company created successfully! Your Company ID is: ${data.companyId}`
-        }
-        setMessage(successMessage)
-
-        // Wait a moment before attempting to sign in
-        await new Promise(resolve => setTimeout(resolve, 1000))
-
-        console.log('Signing in after successful signup...')
-        const result = await signIn('credentials', {
-          email: formData.email,
-          password: formData.password,
-          redirect: false,
-          callbackUrl: '/profile'
-        })
-
-        console.log('SignIn result:', result)
-
-        if (result?.error) {
-          console.error('Auto-login failed:', result.error)
-          setMessage(`${successMessage} Please log in manually.`)
-          setActiveTab('login')
-          return
-        }
-
-        if (result?.url) {
-          console.log('Signup and login successful, redirecting to:', result.url)
-          router.push(result.url)
+          successMessage = `Company created successfully! Your Company ID is: ${data.companyId} Please log in.`;
         } else {
-          console.log('Signup and login successful, redirecting to profile...')
-          router.push('/profile')
+          successMessage = "Registration successful! Please wait for approval before logging in.";
         }
+        setMessage(successMessage);
+        setActiveTab('login');
+        setIsLoading(false);
+        return;
       } else {
-        setMessage(data.message || "Registration failed. Please try again.")
+        setMessage(data.message || "Registration failed. Please try again.");
       }
     } catch (error) {
       console.error('Signup error:', error)

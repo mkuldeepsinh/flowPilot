@@ -6,7 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name?: string;
-  role: 'admin' | 'employee';
+  role: 'admin' | 'employee' | 'owner';
   companyId: string;
   companyName: string;
   isActive: boolean;
@@ -15,6 +15,12 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
+  isApproved: boolean;
+  isRejected: boolean;
+  approvedBy?: string | null;
+  rejectedBy?: string | null;
+  approvedAt?: Date | null;
+  rejectedAt?: Date | null;
 }
 
 const userSchema = new mongoose.Schema({
@@ -37,7 +43,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'employee'],
+    enum: ['admin', 'employee', 'owner'],
     required: [true, 'Role is required']
   },
   companyId: {
@@ -58,6 +64,30 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   lastLogin: {
+    type: Date,
+    default: null
+  },
+  isApproved: {
+    type: Boolean,
+    default: false
+  },
+  isRejected: {
+    type: Boolean,
+    default: false
+  },
+  approvedBy: {
+    type: String,
+    default: null
+  },
+  rejectedBy: {
+    type: String,
+    default: null
+  },
+  approvedAt: {
+    type: Date,
+    default: null
+  },
+  rejectedAt: {
     type: Date,
     default: null
   }

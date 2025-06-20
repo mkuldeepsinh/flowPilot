@@ -65,23 +65,27 @@ export async function POST(request: NextRequest) {
       console.log('Company created:', company.companyId);
 
       // Create admin user
-      console.log('Creating admin user...');
+      console.log('Creating owner user...');
       const user = new User({
         email,
         password, // The password will be hashed by the User model's pre-save hook
-        role: 'admin',
+        role: 'owner',
         companyId: company.companyId,
         companyName: company.companyName,
         name: email.split('@')[0], // Default name from email
         emailVerified: new Date(),
-        lastLogin: new Date()
+        lastLogin: new Date(),
+        isApproved: true,
+        isRejected: false,
+        approvedBy: null,
+        rejectedBy: null
       });
 
       await user.save();
-      console.log('Admin user created:', user._id);
+      console.log('Owner user created:', user._id);
 
       return NextResponse.json({
-        message: 'Company and admin user created successfully',
+        message: 'Company and owner user created successfully',
         companyId: company.companyId,
         user: {
           id: user._id.toString(),
@@ -124,7 +128,11 @@ export async function POST(request: NextRequest) {
         companyName: company.companyName,
         name: email.split('@')[0], // Default name from email
         emailVerified: new Date(),
-        lastLogin: new Date()
+        lastLogin: new Date(),
+        isApproved: false,
+        isRejected: false,
+        approvedBy: null,
+        rejectedBy: null
       });
 
       await user.save();
