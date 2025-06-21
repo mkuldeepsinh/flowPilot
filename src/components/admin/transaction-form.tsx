@@ -76,7 +76,14 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
   const [error, setError] = React.useState<string | null>(null)
   const [banks, setBanks] = React.useState<Bank[]>([])
   const [loadingBanks, setLoadingBanks] = React.useState(true)
-  
+
+  // Helper to get a valid account value
+  const getValidAccount = (account: string | undefined, banks: Bank[]) => {
+    if (!account) return banks[0]?.bankName || ''
+    const found = banks.find(b => b.bankName === account)
+    return found ? account : (banks[0]?.bankName || '')
+  }
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: transaction ? {
@@ -86,6 +93,7 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
       vendor: transaction.vendor || '',
       invoice: transaction.invoice || '',
       department: transaction.department || '',
+      // account will be set after banks are loaded
     } : {
       description: "",
       amount: "",
@@ -110,6 +118,11 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
         if (response.ok) {
           const banksData = await response.json()
           setBanks(banksData)
+          // Set account field if editing and value is not valid
+          if (transaction) {
+            const validAccount = getValidAccount(transaction.account, banksData)
+            form.setValue('account', validAccount)
+          }
         } else {
           console.error("Failed to fetch banks")
         }
@@ -119,8 +132,8 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
         setLoadingBanks(false)
       }
     }
-
     fetchBanks()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   React.useEffect(() => {
@@ -132,9 +145,11 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
         vendor: transaction.vendor || '',
         invoice: transaction.invoice || '',
         department: transaction.department || '',
+        account: getValidAccount(transaction.account, banks),
       })
     }
-  }, [transaction, form])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transaction, banks])
 
   async function onSubmit(values: FormData) {
     try {
@@ -302,32 +317,41 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
               <FormField
                 control={form.control}
                 name="account"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Account</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingBanks}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={loadingBanks ? "Loading banks..." : "Select account"} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {banks.length === 0 ? (
-                          <SelectItem value="" disabled>
-                            {loadingBanks ? "Loading banks..." : "No banks available"}
-                          </SelectItem>
-                        ) : (
-                          banks.map((bank) => (
-                            <SelectItem key={bank._id} value={bank.bankName}>
-                              {bank.bankName} ({bank.currentAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })})
+                render={({ field }) => {
+                  // Ensure field.value is always a string
+                  const safeValue = typeof field.value === 'string' ? field.value : '';
+                  
+                  return (
+                    <FormItem>
+                      <FormLabel>Account</FormLabel>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={safeValue} 
+                        disabled={loadingBanks}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={loadingBanks ? "Loading banks..." : "Select account"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {banks.length === 0 ? (
+                            <SelectItem value="no-banks" disabled>
+                              {loadingBanks ? "Loading banks..." : "No banks available"}
                             </SelectItem>
-                          ))
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                          ) : (
+                            banks.map((bank) => (
+                              <SelectItem key={bank._id} value={bank.bankName || 'unknown-bank'}>
+                                {bank.bankName} ({bank.currentAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })})
+                              </SelectItem>
+                            ))
+                          )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
               <FormField
                 control={form.control}
