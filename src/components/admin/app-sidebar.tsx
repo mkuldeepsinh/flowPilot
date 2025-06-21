@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import {
+  IconBuilding,
   IconCamera,
   IconChartBar,
   IconDashboard,
@@ -31,6 +32,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar"
 
 const data = {
@@ -156,21 +159,23 @@ export function AppSidebar({ companyName, fullUserProfile, ...props }: React.Com
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
-            >
-              <a href="#">
-                <IconInnerShadowTop className="!size-5" />
-                <span className="text-base font-semibold">{companyName}</span>
-              </a>
-            </SidebarMenuButton>
+            <div className="flex items-center gap-2 bg-white text-black font-bold text-lg tracking-tight mb-4 p-3 rounded-lg border shadow-sm">
+              <IconBuilding size={24} />
+              <span>{companyName}</span>
+            </div>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-[#f6f9ff] rounded-none shadow-none mt-0 p-0 flex flex-col gap-2">
+        {/* Main Navigation */}
         <NavMain items={data.navMain} />
+        {/* Settings/Secondary Section */}
+        <div className="mt-4 mb-1 px-6 text-xs font-semibold uppercase text-gray-400 tracking-wider">Settings</div>
+        <NavSecondary items={data.navSecondary} />
       </SidebarContent>
+      <SidebarFooter className="bg-[#f6f9ff] rounded-none shadow-none p-4 border-t border-gray-100 mt-4">
+        <NavUser user={fullUserProfile} />
+      </SidebarFooter>
     </Sidebar>
   )
 }

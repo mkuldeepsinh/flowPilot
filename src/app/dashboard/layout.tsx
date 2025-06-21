@@ -26,6 +26,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     console.error("User not found for email:", session.user.email)
     return <div>Error: Could not retrieve user profile. Please log in again.</div>
   }
+  if (user.role === "employee") {
+    return <div>Error: You do not have permission to access this page.</div>
+  }
   if (!user.companyId) {
     console.error("companyId missing on user:", user)
     return <div>Error: Could not retrieve company ID. Please log in again.</div>
@@ -64,7 +67,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       />
       <SidebarInset>
         <SiteHeader />
-        <div className="flex flex-1 flex-col bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
+        <div className="flex flex-1 flex-col bg-white min-h-screen">
           {children}
         </div>
       </SidebarInset>

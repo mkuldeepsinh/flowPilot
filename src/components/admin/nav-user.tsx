@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/sidebar"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { signOut } from "next-auth/react"
 import { UserAccountDrawer } from "./user-account-drawer"
 
 export function NavUser({
@@ -50,20 +51,7 @@ export function NavUser({
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false)
 
   const handleLogout = async () => {
-    try {
-      const response = await fetch("/api/user/logout", {
-        method: "POST",
-      })
-
-      if (response.ok) {
-        console.log("Logged out successfully")
-        router.push("/") // Redirect to home/login page
-      } else {
-        console.error("Logout failed")
-      }
-    } catch (error) {
-      console.error("Network error during logout", error)
-    }
+    await signOut({ callbackUrl: "/" })
   }
 
   const handleAccountClick = () => {

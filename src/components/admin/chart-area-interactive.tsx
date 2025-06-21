@@ -122,9 +122,11 @@ export function ChartAreaInteractive({ companyId }: { companyId: string }) {
 
   return (
     <Card className="@container/card">
-      <CardHeader>
-        <CardTitle>Profit & Cost Analysis</CardTitle>
-        <CardDescription>{getCardDescription()}</CardDescription>
+      <CardHeader className="flex-row items-center justify-between">
+        <div>
+          <CardTitle>Profit & Cost Analysis</CardTitle>
+          <CardDescription>{getCardDescription()}</CardDescription>
+        </div>
         <CardAction>
           <ToggleGroup
             type="single"
