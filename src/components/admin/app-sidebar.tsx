@@ -18,6 +18,7 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconCreditCard,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/admin/nav-documents"
@@ -52,6 +53,11 @@ const data = {
       title: "Transaction",
       url: "/dashboard/transaction",
       icon: IconChartBar,
+    },
+    {
+      title: "Banks",
+      url: "/dashboard/banks",
+      icon: IconCreditCard,
     },
     {
       title: "Projects",

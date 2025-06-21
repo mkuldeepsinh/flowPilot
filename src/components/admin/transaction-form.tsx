@@ -45,6 +45,12 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>
 
+interface Bank {
+  _id: string
+  bankName: string
+  currentAmount: number
+}
+
 interface TransactionFormProps {
   transaction?: {
     _id: string
@@ -68,6 +74,8 @@ interface TransactionFormProps {
 
 export function TransactionForm({ transaction, onSuccess, mode = 'create', open, onOpenChange }: TransactionFormProps) {
   const [error, setError] = React.useState<string | null>(null)
+  const [banks, setBanks] = React.useState<Bank[]>([])
+  const [loadingBanks, setLoadingBanks] = React.useState(true)
   
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -93,6 +101,28 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
     },
   })
 
+  // Fetch banks when component mounts
+  React.useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        setLoadingBanks(true)
+        const response = await fetch("/api/banks")
+        if (response.ok) {
+          const banksData = await response.json()
+          setBanks(banksData)
+        } else {
+          console.error("Failed to fetch banks")
+        }
+      } catch (error) {
+        console.error("Error fetching banks:", error)
+      } finally {
+        setLoadingBanks(false)
+      }
+    }
+
+    fetchBanks()
+  }, [])
+
   React.useEffect(() => {
     if (transaction) {
       form.reset({
@@ -109,6 +139,16 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
   async function onSubmit(values: FormData) {
     try {
       setError(null)
+      
+      // Check if it's an expense and validate against bank balance
+      if (values.type === 'expense') {
+        const selectedBank = banks.find(bank => bank.bankName === values.account)
+        if (selectedBank && parseFloat(values.amount) > selectedBank.currentAmount) {
+          setError(`Transaction failed: Demanded amount (${parseFloat(values.amount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}) is bigger than current amount (${selectedBank.currentAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}) in ${selectedBank.bankName}`)
+          return
+        }
+      }
+
       const url = mode === 'edit' && transaction 
         ? `/api/transactions/${transaction._id}`
         : '/api/transactions'
@@ -265,16 +305,24 @@ export function TransactionForm({ transaction, onSuccess, mode = 'create', open,
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loadingBanks}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select account" />
+                          <SelectValue placeholder={loadingBanks ? "Loading banks..." : "Select account"} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Bank-1">Bank-1</SelectItem>
-                        <SelectItem value="Bank-2">Bank-2</SelectItem>
-                        <SelectItem value="Bank-3">Bank-3</SelectItem>
+                        {banks.length === 0 ? (
+                          <SelectItem value="" disabled>
+                            {loadingBanks ? "Loading banks..." : "No banks available"}
+                          </SelectItem>
+                        ) : (
+                          banks.map((bank) => (
+                            <SelectItem key={bank._id} value={bank.bankName}>
+                              {bank.bankName} ({bank.currentAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })})
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
