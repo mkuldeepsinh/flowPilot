@@ -74,7 +74,7 @@ function MetricCard({ title, value, change, trend, description, subtext, icon, c
   const styles = colorStyles[color]
 
   return (
-    <Card className={cn("relative overflow-hidden transition-all hover:shadow-md border-transparent", styles.bgLight, className)}> {/* Removed styles.border and added border-transparent */}
+    <Card className={cn("relative overflow-hidden transition-all hover:shadow-md border-transparent pb-8", styles.bgLight, className)}> {/* Added extra bottom padding */}
       <div className={cn("absolute inset-0 opacity-50 bg-gradient-to-br", styles.gradient)} /> {/* Adjusted opacity for gradient */}
       <CardHeader className="pb-2 relative z-10"> {/* Added relative z-10 */}
         <div className="flex items-center justify-between">
