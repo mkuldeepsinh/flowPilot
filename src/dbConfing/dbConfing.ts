@@ -5,7 +5,6 @@ import '@/models/projectModel';
 import '@/models/taskModel';
 
 const MONGODB_URI = process.env.MONGO_URL;
-
 if (!MONGODB_URI) {
   throw new Error(
     'Please define the MONGO_URL environment variable inside .env'
@@ -45,6 +44,16 @@ async function dbConnect(): Promise<typeof mongoose> {
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
       console.log('MongoDB connected successfully');
+      
+      // Set up connection event handlers after connection is established
+      mongoose.connection.on('error', (err) => {
+        console.error('MongoDB connection error:', err);
+      });
+
+      mongoose.connection.on('disconnected', () => {
+        console.log('MongoDB disconnected');
+      });
+
       return mongoose;
     });
   }
@@ -60,19 +69,12 @@ async function dbConnect(): Promise<typeof mongoose> {
   return cached.conn;
 }
 
-// Handle connection events
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
-
 process.on('SIGINT', async () => {
   try {
-    await mongoose.connection.close();
-    console.log('MongoDB connection closed through app termination');
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.connection.close();
+      console.log('MongoDB connection closed through app termination');
+    }
     process.exit(0);
   } catch (err) {
     console.error('Error closing MongoDB connection:', err);

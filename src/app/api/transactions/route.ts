@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import dbConnect from "@/dbConfing/dbConfing";
 import User from "@/models/userModel";
+import Bank from "@/models/bankModel";
 // import { mockCompany } from "@/lib/dashboard"; // This will be removed as we'll use dynamic companyId
 import { cookies } from 'next/headers';
 import { verify } from 'jsonwebtoken';
@@ -61,6 +62,27 @@ export async function POST(request: NextRequest) {
     }
     const companyId = user.companyId;
     const data = await request.json();
+
+    // Validate bank balance for expense transactions
+    if (data.type === 'expense') {
+      const bank = await Bank.findOne({ 
+        companyId: companyId, 
+        bankName: data.account 
+      });
+      
+      if (!bank) {
+        return NextResponse.json({ 
+          error: 'Bank account not found' 
+        }, { status: 400 });
+      }
+      
+      if (parseFloat(data.amount) > bank.currentAmount) {
+        return NextResponse.json({ 
+          error: `Transaction failed: Demanded amount (${parseFloat(data.amount).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}) is bigger than current amount (${bank.currentAmount.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}) in ${bank.bankName}` 
+        }, { status: 400 });
+      }
+    }
+
     // Add companyId and default values
     const transactionData = {
       ...data,
@@ -72,8 +94,38 @@ export async function POST(request: NextRequest) {
       // Set department to "All" if not provided
       department: data.department || "All"
     };
-    const transaction = await Transaction.create(transactionData);
-    return NextResponse.json(transaction, { status: 201 });
+
+    // Start a transaction session for atomicity
+    const session2 = await mongoose.startSession();
+    session2.startTransaction();
+
+    try {
+      // Create the transaction
+      const transaction = await Transaction.create([transactionData], { session: session2 });
+
+      // Update bank balance
+      const bank = await Bank.findOne({ 
+        companyId: companyId, 
+        bankName: data.account 
+      });
+
+      if (bank) {
+        if (data.type === 'income') {
+          bank.currentAmount += parseFloat(data.amount);
+        } else if (data.type === 'expense') {
+          bank.currentAmount -= parseFloat(data.amount);
+        }
+        await bank.save({ session: session2 });
+      }
+
+      await session2.commitTransaction();
+      return NextResponse.json(transaction[0], { status: 201 });
+    } catch (error) {
+      await session2.abortTransaction();
+      throw error;
+    } finally {
+      session2.endSession();
+    }
   } catch (error) {
     console.error('Detailed error creating transaction:', error);
     return NextResponse.json(

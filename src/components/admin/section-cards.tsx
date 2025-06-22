@@ -1,6 +1,7 @@
-import type React from "react" // Added import
+import type React from "react"
+import { useEffect, useState } from "react"
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
-import { ArrowDownRight, ArrowUpRight, DollarSign, Users, CreditCard, Briefcase } from "lucide-react" // Added Briefcase icon
+import { ArrowDownRight, ArrowUpRight, DollarSign, Users, CreditCard, Briefcase } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -10,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { cn } from "@/lib/utils" // Added cn import
+import { cn } from "@/lib/utils"
 
 // Added MetricCardProps interface
 interface MetricCardProps {
@@ -118,45 +119,109 @@ function MetricCard({ title, value, change, trend, description, subtext, icon, c
 
 
 export function SectionCards() {
-  const cardsData: MetricCardProps[] = [ // Updated data structure
+  const [bankBalance, setBankBalance] = useState<number | null>(null)
+  const [totalRevenue, setTotalRevenue] = useState<number | null>(null)
+  const [growthRate, setGrowthRate] = useState<{rate: number|null, trend: 'up'|'down', change: string}>({rate: null, trend: 'up', change: ''})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      setLoading(true)
+      try {
+        const [banksRes, transactionsRes] = await Promise.all([
+          fetch("/api/banks"),
+          fetch("/api/transactions")
+        ])
+        const banks = await banksRes.json()
+        const transactions = await transactionsRes.json()
+        const totalBank = Array.isArray(banks) ? banks.reduce((sum, b) => sum + (b.currentAmount || 0), 0) : 0
+        const totalRev = Array.isArray(transactions) ? transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + (t.amount || 0), 0) : 0
+        setBankBalance(totalBank)
+        setTotalRevenue(totalRev)
+
+        // Calculate growth rate (month-over-month revenue growth)
+        const now = new Date()
+        const thisMonth = now.getMonth()
+        const thisYear = now.getFullYear()
+        const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1
+        const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear
+        const thisMonthRevenue = transactions.filter((t:any) => t.type === "income" && new Date(t.date).getMonth() === thisMonth && new Date(t.date).getFullYear() === thisYear).reduce((sum:number, t:any) => sum + (t.amount || 0), 0)
+        const lastMonthRevenue = transactions.filter((t:any) => t.type === "income" && new Date(t.date).getMonth() === lastMonth && new Date(t.date).getFullYear() === lastMonthYear).reduce((sum:number, t:any) => sum + (t.amount || 0), 0)
+        let rate: number|null = null
+        let trend: 'up'|'down' = 'up'
+        let change = ''
+        if (lastMonthRevenue > 0) {
+          rate = ((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100
+          trend = rate >= 0 ? 'up' : 'down'
+          change = (rate >= 0 ? '+' : '') + rate.toFixed(1) + '%'
+        } else if (thisMonthRevenue > 0) {
+          rate = 100
+          trend = 'up'
+          change = '+100%'
+        } else {
+          rate = 0
+          trend = 'down'
+          change = '0%'
+        }
+        setGrowthRate({rate, trend, change})
+      } catch (e) {
+        setBankBalance(null)
+        setTotalRevenue(null)
+        setGrowthRate({rate: null, trend: 'up', change: ''})
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null) return "--"
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR'
+    }).format(amount)
+  }
+
+  const cardsData: MetricCardProps[] = [
     {
       title: "Total Revenue",
-      value: "$1,250.00",
-      change: "+12.5%",
+      value: loading ? "--" : formatCurrency(totalRevenue),
+      change: "",
       trend: "up",
-      description: "Trending up this month",
-      subtext: "Visitors for the last 6 months",
+      description: "Total income from all transactions",
+      subtext: "Sum of all completed income transactions",
       icon: <DollarSign className="h-4 w-4" />,
       color: "emerald",
     },
     {
-      title: "Total Bank Balance", // Changed title
-      value: "$5,750,000.00", // Placeholder value
-      change: "-0.2%", // Placeholder change
-      trend: "down", // Placeholder trend
-      description: "Overall bank liquidity", // Placeholder description
-      subtext: "Across all operational accounts", // Placeholder subtext
+      title: "Total Bank Balance",
+      value: loading ? "--" : formatCurrency(bankBalance),
+      change: "",
+      trend: "up",
+      description: "Sum of all bank accounts",
+      subtext: "Current balance across all banks",
       icon: <DollarSign className="h-4 w-4" />,
-      color: "rose", // Changed color to rose for negative trend
+      color: "rose",
     },
     {
-      title: "Active Projects", // Changed title
-      value: "12", // Placeholder value
-      change: "+3", // Placeholder change (e.g., new projects this month)
+      title: "Active Projects",
+      value: "12",
+      change: "+3",
       trend: "up",
-      description: "Ongoing initiatives and tasks", // Changed description
-      subtext: "Tracking progress and milestones", // Changed subtext
-      icon: <Briefcase className="h-4 w-4" />, // Changed icon
+      description: "Ongoing initiatives and tasks",
+      subtext: "Tracking progress and milestones",
+      icon: <Briefcase className="h-4 w-4" />,
       color: "blue",
     },
     {
       title: "Growth Rate",
-      value: "4.5%",
-      change: "+4.5%",
-      trend: "up",
-      description: "Steady performance increase",
-      subtext: "Meets growth projections",
-      icon: <IconTrendingUp className="h-4 w-4" />, // Using Tabler icon as per example
+      value: loading ? "--" : (growthRate.rate !== null ? growthRate.change : '--'),
+      change: loading ? "" : (growthRate.rate !== null ? growthRate.change : ''),
+      trend: growthRate.trend,
+      description: "Month-over-month revenue growth",
+      subtext: "Compared to previous month",
+      icon: <IconTrendingUp className="h-4 w-4" />,
       color: "violet",
     },
   ]

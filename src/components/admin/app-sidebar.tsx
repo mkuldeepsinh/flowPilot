@@ -18,6 +18,8 @@ import {
   IconSearch,
   IconSettings,
   IconUsers,
+  IconCreditCard,
+  IconLayoutSidebarLeftCollapse,
 } from "@tabler/icons-react"
 
 import { NavDocuments } from "@/components/admin/nav-documents"
@@ -52,6 +54,11 @@ const data = {
       title: "Transaction",
       url: "/dashboard/transaction",
       icon: IconChartBar,
+    },
+    {
+      title: "Banks",
+      url: "/dashboard/banks",
+      icon: IconCreditCard,
     },
     {
       title: "Projects",
@@ -133,6 +140,11 @@ const data = {
       url: "#",
       icon: IconSearch,
     },
+    {
+      title: "Toggle Sidebar",
+      url: "#",
+      icon: IconLayoutSidebarLeftCollapse,
+    },
   ],
   documents: [
     {
@@ -153,7 +165,16 @@ const data = {
   ],
 }
 
-export function AppSidebar({ companyName, fullUserProfile, ...props }: React.ComponentProps<typeof Sidebar> & { companyName: string, fullUserProfile: any }) {
+export function AppSidebar({ 
+  companyName, 
+  fullUserProfile, 
+  onSearchClick,
+  ...props 
+}: React.ComponentProps<typeof Sidebar> & { 
+  companyName: string, 
+  fullUserProfile: any,
+  onSearchClick?: () => void
+}) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -171,7 +192,7 @@ export function AppSidebar({ companyName, fullUserProfile, ...props }: React.Com
         <NavMain items={data.navMain} />
         {/* Settings/Secondary Section */}
         <div className="mt-4 mb-1 px-6 text-xs font-semibold uppercase text-gray-400 tracking-wider">Settings</div>
-        <NavSecondary items={data.navSecondary} />
+        <NavSecondary items={data.navSecondary} onSearchClick={onSearchClick} />
       </SidebarContent>
       <SidebarFooter className="bg-[#f6f9ff] rounded-none shadow-none p-4 border-t border-gray-100 mt-4">
         <NavUser user={fullUserProfile} />
