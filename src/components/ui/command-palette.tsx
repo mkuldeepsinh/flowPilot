@@ -12,8 +12,6 @@ import {
   IconCreditCard,
   IconChartBar,
   IconSettings,
-  IconBuilding,
-  IconMessageCircle,
 } from "@tabler/icons-react"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 
@@ -58,7 +56,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       title: "New Project",
       description: "Start a new project",
       icon: IconFolder,
-      action: () => router.push("/dashboard/project"),
+      action: () => router.push("/projects/create"),
       category: "Create"
     },
     {
@@ -91,6 +89,14 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
       description: "Manage bank accounts",
       icon: IconCreditCard,
       action: () => router.push("/dashboard/banks"),
+      category: "Navigate"
+    },
+    {
+      id: "view-projects",
+      title: "View Projects",
+      description: "See all projects",
+      icon: IconFolder,
+      action: () => router.push("/projects"),
       category: "Navigate"
     },
     {
@@ -155,7 +161,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="What you want to do?"
+              placeholder="What do you want to do?"
               className="flex-1 bg-transparent text-gray-900 placeholder-gray-500 outline-none text-sm"
               autoFocus
             />
@@ -168,7 +174,7 @@ export function CommandPalette({ open, onOpenChange }: CommandPaletteProps) {
           <div className="max-h-80 overflow-y-auto">
             {filteredCommands.length === 0 ? (
               <div className="p-6 text-center text-gray-500 text-sm">
-                No results found for "{search}"
+                No results found for &quot;{search}&quot;
               </div>
             ) : (
               <div className="py-1">
