@@ -1,9 +1,4 @@
-import { AppSidebar } from "@/components/admin/app-sidebar"
-import { SiteHeader } from "@/components/admin/site-header"
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import { DashboardContent } from "@/components/admin/dashboard-content"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth" 
 import dbConnect from "@/dbConfing/dbConfing" 
@@ -52,25 +47,5 @@ export default async function DashboardLayout({ children }: { children: React.Re
     lastLogin: user.lastLogin?.toISOString?.() ?? null,
   }
 
-  return (
-    <SidebarProvider
-      className="font-sans"
-      style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-      } as React.CSSProperties}
-    >
-      <AppSidebar
-        variant="inset"
-        fullUserProfile={fullUserProfile}
-        companyName={fullUserProfile.companyName}
-      />
-      <SidebarInset>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col bg-white min-h-screen">
-          {children}
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
-  )
+  return <DashboardContent fullUserProfile={fullUserProfile}>{children}</DashboardContent>
 }
