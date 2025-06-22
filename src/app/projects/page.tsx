@@ -78,115 +78,132 @@ const ProjectsPage = () => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white pb-16">
             {/* Header */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-500 to-blue-400 py-8 px-4 rounded-b-2xl shadow mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <h1 className="text-4xl font-extrabold text-white drop-shadow">Projects</h1>
-                <div className="flex gap-2 items-center">
-                    <Link href="/projects/create">
-                        <Button className="bg-white/90 hover:bg-white text-blue-700 font-bold shadow flex items-center gap-2">
-                            <PlusIcon className="w-5 h-5" /> Create Project
-                        </Button>
-                    </Link>
+            <div className="max-w-6xl mx-auto mt-8 mb-6 px-4">
+                <div className="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 py-6 px-6 rounded-2xl shadow-lg flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <h1 className="text-3xl md:text-4xl font-extrabold text-white drop-shadow tracking-tight">Projects</h1>
+                    <div className="flex gap-2 items-center">
+                        <Link href="/projects/create">
+                            <Button className="bg-white/90 hover:bg-white text-blue-700 font-bold shadow flex items-center gap-2 px-5 py-2 rounded-lg text-base transition-transform hover:scale-105">
+                                <PlusIcon className="w-5 h-5" /> Create Project
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
             </div>
             {/* Controls */}
-            <div className="max-w-6xl mx-auto flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8 px-4">
-                <Input
-                    className="w-full md:w-80 bg-white shadow rounded-xl border border-gray-200"
-                    placeholder="Search projects..."
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                />
-                <div className="flex gap-2 items-center flex-wrap">
-                    <Button variant={statusFilter === 'all' ? 'default' : 'outline'} onClick={() => setStatusFilter('all')}>All</Button>
-                    <Button variant={statusFilter === 'active' ? 'default' : 'outline'} onClick={() => setStatusFilter('active')}>Active</Button>
-                    <Button variant={statusFilter === 'archived' ? 'default' : 'outline'} onClick={() => setStatusFilter('archived')}>Archived</Button>
-                    <Button variant="outline" className="flex items-center gap-1" onClick={() => { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>
-                        <ArrowsUpDownIcon className="w-4 h-4" />
-                        {sort.charAt(0).toUpperCase() + sort.slice(1)}
-                    </Button>
-                    <select
-                        className="ml-2 rounded border-gray-300 text-sm px-2 py-1"
-                        value={sort}
-                        onChange={e => setSort(e.target.value as any)}
-                    >
-                        <option value="name">Name</option>
-                        <option value="startDate">Start Date</option>
-                        <option value="endDate">End Date</option>
-                        <option value="clientName">Client</option>
-                    </select>
+            <div className="max-w-6xl mx-auto mb-8 px-4">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <Input
+                        className="w-full md:w-80 bg-white shadow rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-200 text-base px-4 py-2"
+                        placeholder="Search projects..."
+                        value={search}
+                        onChange={e => setSearch(e.target.value)}
+                    />
+                    <div className="flex gap-2 items-center flex-wrap mt-2 md:mt-0">
+                        <Button variant={statusFilter === 'all' ? 'default' : 'outline'} className="rounded-lg px-3 py-1.5 text-sm" onClick={() => setStatusFilter('all')}>All</Button>
+                        <Button variant={statusFilter === 'active' ? 'default' : 'outline'} className="rounded-lg px-3 py-1.5 text-sm" onClick={() => setStatusFilter('active')}>Active</Button>
+                        <Button variant={statusFilter === 'archived' ? 'default' : 'outline'} className="rounded-lg px-3 py-1.5 text-sm" onClick={() => setStatusFilter('archived')}>Archived</Button>
+                        <Button variant="outline" className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm" onClick={() => { setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>
+                            <ArrowsUpDownIcon className="w-4 h-4" />
+                            {sort.charAt(0).toUpperCase() + sort.slice(1)}
+                        </Button>
+                        <select
+                            className="ml-2 rounded-lg border-gray-300 text-sm px-2 py-1 bg-white shadow focus:ring-2 focus:ring-blue-200"
+                            value={sort}
+                            onChange={e => setSort(e.target.value as any)}
+                        >
+                            <option value="name">Name</option>
+                            <option value="startDate">Start Date</option>
+                            <option value="endDate">End Date</option>
+                            <option value="clientName">Client</option>
+                        </select>
+                    </div>
                 </div>
             </div>
-            {/* Projects Grid */}
-            <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-                {filteredProjects.map((project) => (
-                    <div key={project._id as string} className="relative group">
-                        {/* Favorite Star */}
-                        <button
-                            className={`absolute top-4 right-4 z-10 rounded-full p-1 bg-white/80 hover:bg-yellow-100 shadow transition ${favorites.includes(project._id as string) ? 'text-yellow-400' : 'text-gray-300'}`}
-                            onClick={e => { e.stopPropagation(); e.preventDefault(); toggleFavorite(project._id as string); }}
-                            title={favorites.includes(project._id as string) ? 'Unfavorite' : 'Favorite'}
-                        >
-                            <StarIcon className="w-6 h-6" />
-                        </button>
-                        <Link href={`/projects/${project._id}`}>
-                            <Card className="hover:shadow-2xl transition-shadow duration-200 cursor-pointer rounded-2xl border border-gray-100 bg-white group-hover:-translate-y-1 group-hover:scale-[1.02]">
-                                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-indigo-400 rounded-t-2xl" />
-                                <CardHeader className="pb-2">
-                                    <div className="flex items-center gap-2">
-                                        <CardTitle className="text-2xl font-bold flex-1">{project.name}</CardTitle>
-                                        {/* Status Badge */}
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${project.isArchived ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}`}>
-                                            {project.isArchived ? 'Archived' : 'Active'}
-                                        </span>
-                                    </div>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-gray-600 mb-2 min-h-[40px]">{project.description}</p>
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-xs text-gray-500"><b>Client:</b> {project.clientName}</span>
-                                    </div>
-                                    <div className="flex gap-4 text-xs text-gray-500 mb-2">
-                                        <span><b>Start:</b> {new Date(project.startDate).toLocaleDateString()}</span>
-                                        <span><b>End:</b> {new Date(project.endDate).toLocaleDateString()}</span>
-                                    </div>
-                                    {/* Team Avatars */}
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <UserGroupIcon className="w-4 h-4 text-blue-400" />
-                                        {/* Project head and up to 2 employees as avatars */}
-                                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-md shadow">
-                                            {getInitials((project.projectHead as any)?.name || 'PH')}
-                                        </span>
-                                        {(Array.isArray(project.employees) && project.employees.slice(0, 2).map((e: any) => (
-                                            <span key={e._id as string} className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-md shadow -ml-2 border-2 border-white">
-                                                {getInitials(e.name || 'E')}
-                                            </span>
-                                        )))}
-                                        {Array.isArray(project.employees) && project.employees.length > 2 && (
-                                            <span className="ml-1 text-xs text-gray-400">+{project.employees.length - 2}</span>
-                                        )}
-                                    </div>
-                                    {/* Progress Bar (if tasks available) */}
-                                    {Array.isArray(project.tasks) && project.tasks.length > 0 ? (
-                                        <div className="mb-2">
-                                            <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                                                <span>Progress</span>
-                                                <span>{Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%</span>
+            {/* Projects Apple-like Card Container */}
+            <div className="max-w-6xl mx-auto px-2 md:px-0">
+                <div className="bg-white/90 rounded-3xl shadow-2xl p-6 md:p-10 flex flex-col gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredProjects.map((project) => (
+                            <div key={project._id as string} className="relative group transition-transform hover:scale-[1.02]">
+                                {/* Favorite Star */}
+                                <button
+                                    className={`absolute top-3 right-3 z-10 rounded-full p-1.5 bg-white/90 hover:bg-yellow-100 shadow transition-colors duration-200 ${favorites.includes(project._id as string) ? 'text-yellow-400' : 'text-gray-300'}`}
+                                    onClick={e => { e.stopPropagation(); e.preventDefault(); toggleFavorite(project._id as string); }}
+                                    title={favorites.includes(project._id as string) ? 'Unfavorite' : 'Favorite'}
+                                >
+                                    <StarIcon className="w-5 h-5" />
+                                </button>
+                                <Link href={`/projects/${project._id}`} className="block">
+                                    <Card className="hover:shadow-xl transition-shadow duration-200 cursor-pointer rounded-2xl border border-gray-100 bg-white group-hover:-translate-y-1 group-hover:scale-[1.01] shadow overflow-hidden p-4 flex flex-col gap-2 min-h-[210px]">
+                                        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 rounded-t-2xl" />
+                                        <CardHeader className="pb-1">
+                                            <div className="flex items-center gap-2">
+                                                <CardTitle className="text-lg font-semibold flex-1 text-blue-900 group-hover:text-indigo-700 transition-colors duration-200 truncate">{project.name}</CardTitle>
+                                                {/* Status Badge */}
+                                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold shadow ${project.isArchived ? 'bg-gray-200 text-gray-600' : 'bg-green-100 text-green-700'}`}>
+                                                    {project.isArchived ? 'Archived' : 'Active'}
+                                                </span>
                                             </div>
-                                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div className="bg-gradient-to-r from-blue-500 to-indigo-400 h-2 rounded-full" style={{ width: `${Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%` }}></div>
+                                        </CardHeader>
+                                        <CardContent className="flex-1 flex flex-col gap-1">
+                                            <p className="text-gray-600 mb-1 min-h-[32px] text-sm line-clamp-2">{project.description}</p>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <span className="text-xs text-gray-500"><b>Client:</b> {project.clientName}</span>
                                             </div>
-                                        </div>
-                                    ) : (
-                                        <div className="mb-2 text-xs text-gray-400">No tasks yet</div>
-                                    )}
-                                </CardContent>
-                            </Card>
-                        </Link>
+                                            <div className="flex gap-4 text-xs text-gray-500 mb-1">
+                                                <span><b>Start:</b> {new Date(project.startDate).toLocaleDateString()}</span>
+                                                <span><b>End:</b> {new Date(project.endDate).toLocaleDateString()}</span>
+                                            </div>
+                                            {/* Team Avatars */}
+                                            <div className="flex items-center gap-1 mb-1">
+                                                <UserGroupIcon className="w-4 h-4 text-blue-400" />
+                                                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shadow">
+                                                    {getInitials((project.projectHead as any)?.name || 'PH')}
+                                                </span>
+                                                {(Array.isArray(project.employees) && project.employees.slice(0, 2).map((e: any) => (
+                                                    <span key={e._id as string} className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs shadow -ml-2 border-2 border-white">
+                                                        {getInitials(e.name || 'E')}
+                                                    </span>
+                                                )))}
+                                                {Array.isArray(project.employees) && project.employees.length > 2 && (
+                                                    <span className="ml-1 text-xs text-gray-400">+{project.employees.length - 2}</span>
+                                                )}
+                                            </div>
+                                            {/* Progress Bar (if tasks available) */}
+                                            {Array.isArray(project.tasks) && project.tasks.length > 0 ? (
+                                                <div className="mb-1">
+                                                    <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
+                                                        <span>Progress</span>
+                                                        <span>{Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%</span>
+                                                    </div>
+                                                    <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                                        <div className="bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%` }}></div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="mb-1 text-xs text-gray-400">No tasks yet</div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
+                                </Link>
+                            </div>
+                        ))}
+                        {filteredProjects.length === 0 && (
+                            <div className="col-span-full text-center py-16 flex flex-col items-center">
+                                <svg width="60" height="60" fill="none" viewBox="0 0 80 80" className="mb-3">
+                                    <circle cx="40" cy="40" r="38" stroke="#6366f1" strokeWidth="4" fill="#f1f5ff" />
+                                    <path d="M25 40h30M40 25v30" stroke="#6366f1" strokeWidth="4" strokeLinecap="round" />
+                                </svg>
+                                <div className="text-xl font-bold text-indigo-400 mb-1">No projects found</div>
+                                <div className="text-sm text-gray-400 mb-4">Start by creating your first project!</div>
+                                <Link href="/projects/create">
+                                    <Button className="bg-gradient-to-r from-blue-600 via-indigo-500 to-purple-500 text-white font-bold px-5 py-2 rounded-lg shadow hover:scale-105 transition-transform text-base">Create Project</Button>
+                                </Link>
+                            </div>
+                        )}
                     </div>
-                ))}
-                {filteredProjects.length === 0 && (
-                    <div className="col-span-full text-center text-gray-400 py-12 text-lg">No projects found.</div>
-                )}
+                </div>
             </div>
         </div>
     );
