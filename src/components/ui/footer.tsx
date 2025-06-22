@@ -9,10 +9,8 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">CompanyFlow</span>
+              <img src="/logo.png" alt="FlowPilot Logo" className="h-8 w-8 object-contain mr-2" />
+              <span className="text-xl font-bold">FlowPilot</span>
             </Link>
             <p className="text-gray-400 text-sm">
               Streamline your business operations with our comprehensive company management platform.
@@ -20,7 +18,7 @@ export function Footer() {
             <div className="space-y-2 text-sm text-gray-400">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
-                <span>contact@companyflow.com</span>
+                <span>contact@flowpilot.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
@@ -116,7 +114,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} CompanyFlow. All rights reserved.</p>
+          <p className="text-gray-400 text-sm">© {new Date().getFullYear()} FlowPilot. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="#" className="text-gray-400 hover:text-white text-sm transition-colors">
               Privacy Policy

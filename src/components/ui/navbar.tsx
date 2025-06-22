@@ -31,11 +31,9 @@ export function Navbar() {
         <div className="flex h-16 items-center justify-between rounded-2xl border bg-white/80 backdrop-blur-md shadow-lg px-4 md:px-8">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
-              <Building2 className="h-5 w-5 text-white" />
-            </div>
+            <img src="/logo.png" alt="FlowPilot Logo" className="h-12 w-12 object-contain mr-2" />
             <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              CompanyFlow
+              FlowPilot
             </span>
           </Link>
 

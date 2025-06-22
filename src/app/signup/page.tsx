@@ -210,10 +210,10 @@ export default function AuthPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <Shield className="h-12 w-12 mx-auto text-blue-600" />
+              <img src="/logo.png" alt="FlowPilot Logo" className="h-14 w-14 mx-auto object-contain" />
             </motion.div>
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Welcome to FinancePro
+              Welcome to FlowPilot
             </CardTitle>
             <CardDescription className="text-gray-600">
               Sign in to your account or create a new one
