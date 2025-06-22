@@ -1,5 +1,8 @@
 // File: dbConfig/dbConfig.ts
 import mongoose from 'mongoose';
+import '@/models/userModel';
+import '@/models/projectModel';
+import '@/models/taskModel';
 
 const MONGODB_URI = process.env.MONGO_URL;
 if (!MONGODB_URI) {
@@ -78,5 +81,5 @@ process.on('SIGINT', async () => {
     process.exit(1);
   }
 });
-
 export default dbConnect;
+
