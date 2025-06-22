@@ -143,7 +143,7 @@ function ProfilePage() {
           className="flex flex-col items-center mb-10"
         >
           <div className="relative flex items-center justify-center w-32 h-32 mx-auto">
-            <Avatar className="w-28 h-28 h-28 flex items-center justify-center border-4 border-white shadow-xl bg-gradient-to-br from-blue-500 to-indigo-600">
+            <Avatar className="w-28 h-28 flex items-center justify-center border-4 border-white shadow-xl bg-gradient-to-br from-blue-500 to-indigo-600">
               <span className="flex items-center justify-center w-full h-full">
                 <UserIcon className="h-14 w-14 text-white" />
               </span>

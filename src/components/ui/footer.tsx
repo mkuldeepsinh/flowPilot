@@ -22,11 +22,11 @@ export function Footer() {
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>+1 (555) 123-4567</span>
+                <span>+91 7383485353</span>
               </div>
               <div className="flex items-center space-x-2">
                 <MapPin className="h-4 w-4" />
-                <span>123 Business St, Suite 100</span>
+                <span>NIT Surat, Gujarat, India</span>
               </div>
             </div>
           </div>
