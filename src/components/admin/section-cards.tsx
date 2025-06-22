@@ -2,6 +2,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
 import { ArrowDownRight, ArrowUpRight, DollarSign, Users, CreditCard, Briefcase } from "lucide-react"
+import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
 import {
@@ -123,17 +124,20 @@ export function SectionCards() {
   const [totalRevenue, setTotalRevenue] = useState<number | null>(null)
   const [growthRate, setGrowthRate] = useState<{rate: number|null, trend: 'up'|'down', change: string}>({rate: null, trend: 'up', change: ''})
   const [loading, setLoading] = useState(true)
+  const [activeProjectsCount, setActiveProjectsCount] = useState<number | null>(null)
 
   useEffect(() => {
     async function fetchData() {
       setLoading(true)
       try {
-        const [banksRes, transactionsRes] = await Promise.all([
+        const [banksRes, transactionsRes, projectsRes] = await Promise.all([
           fetch("/api/banks"),
-          fetch("/api/transactions")
+          fetch("/api/transactions"),
+          fetch("/api/projects")
         ])
         const banks = await banksRes.json()
         const transactions = await transactionsRes.json()
+        const projects = await projectsRes.json()
         const totalBank = Array.isArray(banks) ? banks.reduce((sum, b) => sum + (b.currentAmount || 0), 0) : 0
         const totalRev = Array.isArray(transactions) ? transactions.filter((t) => t.type === "income").reduce((sum, t) => sum + (t.amount || 0), 0) : 0
         setBankBalance(totalBank)
@@ -164,10 +168,15 @@ export function SectionCards() {
           change = '0%'
         }
         setGrowthRate({rate, trend, change})
+
+        // Active projects: not archived
+        const activeProjects = Array.isArray(projects) ? projects.filter((p:any) => !p.isArchived) : []
+        setActiveProjectsCount(activeProjects.length)
       } catch (e) {
         setBankBalance(null)
         setTotalRevenue(null)
         setGrowthRate({rate: null, trend: 'up', change: ''})
+        setActiveProjectsCount(null)
       } finally {
         setLoading(false)
       }
@@ -206,8 +215,8 @@ export function SectionCards() {
     },
     {
       title: "Active Projects",
-      value: "12",
-      change: "+3",
+      value: loading ? "--" : (activeProjectsCount !== null ? activeProjectsCount.toString() : "--"),
+      change: "",
       trend: "up",
       description: "Ongoing initiatives and tasks",
       subtext: "Tracking progress and milestones",
@@ -227,19 +236,37 @@ export function SectionCards() {
   ]
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 lg:px-6">
-      {cardsData.map((card) => (
-        <MetricCard
-          key={card.title}
-          title={card.title}
-          value={card.value}
-          change={card.change}
-          trend={card.trend}
-          description={card.description}
-          subtext={card.subtext}
-          icon={card.icon}
-          color={card.color}
-        />
-      ))}
+      {cardsData.map((card) => {
+        if (card.title === "Active Projects") {
+          return (
+            <Link href="/projects" key={card.title} className="contents">
+              <MetricCard
+                title={card.title}
+                value={card.value}
+                change={card.change}
+                trend={card.trend}
+                description={card.description}
+                subtext={card.subtext}
+                icon={card.icon}
+                color={card.color}
+              />
+            </Link>
+          );
+        }
+        return (
+          <MetricCard
+            key={card.title}
+            title={card.title}
+            value={card.value}
+            change={card.change}
+            trend={card.trend}
+            description={card.description}
+            subtext={card.subtext}
+            icon={card.icon}
+            color={card.color}
+          />
+        );
+      })}
     </div>
   )
 }
