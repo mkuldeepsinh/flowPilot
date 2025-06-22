@@ -13,10 +13,11 @@ export async function GET(request: NextRequest) {
     }
     
     // In a multi-tenant app, you might want to filter by companyId
-    // const currentUser = await User.findOne({ email: session.user.email });
-    // const users = await User.find({ companyId: currentUser.companyId }).select('id name email role');
-    
-    const users = await User.find({}).select('id name email role');
+    const currentUser = await User.findOne({ email: session.user.email });
+    if (!currentUser) {
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
+    }
+    const users = await User.find({ companyId: currentUser.companyId }).select('id name email role');
 
     return NextResponse.json(users, { status: 200 });
   } catch (error: any) {

@@ -21,6 +21,18 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
     }
 
+    const user = await User.findById(session.user.id);
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    // Find the company by companyId
+    const Company = (await import("@/models/companyModel")).default;
+    const company = await Company.findOne({ companyId: user.companyId });
+    if (!company) {
+      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+    }
+
     const project = new Project({
       name,
       description,
@@ -30,7 +42,8 @@ export async function POST(request: Request) {
       projectHead,
       employees: employees || [],
       totalRevenue,
-      cost
+      cost,
+      company: company._id,
     });
 
     await project.save();
@@ -56,13 +69,24 @@ export async function GET() {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
+        const Company = (await import("@/models/companyModel")).default;
+        const company = await Company.findOne({ companyId: user.companyId });
+        if (!company) {
+            return NextResponse.json({ message: "Company not found" }, { status: 404 });
+        }
+
         let projects;
         if (user.role === "admin" || user.role === "owner") {
-            projects = await Project.find().populate("projectHead", "name email").populate("employees", "name email");
+            projects = await Project.find({ company: company._id })
+                .populate("projectHead", "name email")
+                .populate("employees", "name email");
         } else {
             projects = await Project.find({
+                company: company._id,
                 $or: [{ projectHead: user._id }, { employees: user._id }],
-            }).populate("projectHead", "name email").populate("employees", "name email");
+            })
+                .populate("projectHead", "name email")
+                .populate("employees", "name email");
         }
 
         return NextResponse.json(projects, { status: 200 });

@@ -14,6 +14,7 @@ export interface IProject extends Document {
   isArchived: boolean;
   createdAt: Date;
   updatedAt: Date;
+  company: mongoose.Schema.Types.ObjectId;
 }
 
 const projectSchema = new Schema<IProject>(
@@ -67,6 +68,11 @@ const projectSchema = new Schema<IProject>(
     isArchived: {
       type: Boolean,
       default: false,
+    },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: true,
     },
   },
   { timestamps: true }
