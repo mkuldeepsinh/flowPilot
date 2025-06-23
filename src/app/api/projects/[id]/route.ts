@@ -85,6 +85,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
             if (body.totalRevenue !== undefined) updateData.totalRevenue = body.totalRevenue;
             if (body.cost !== undefined) updateData.cost = body.cost;
             if (body.projectHead !== undefined) updateData.projectHead = body.projectHead;
+            if (body.isArchived !== undefined) updateData.isArchived = body.isArchived;
         }
 
         const updatedProject = await Project.findByIdAndUpdate(id, updateData, { new: true });

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusIcon, StarIcon, UserGroupIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, StarIcon, UserGroupIcon, ArrowsUpDownIcon, TrashIcon, ArrowUturnUpIcon } from '@heroicons/react/24/outline';
 import { IProject } from '@/models/projectModel';
 
 const getInitials = (name: string) => {
@@ -25,21 +25,21 @@ const ProjectsPage = () => {
     const [favorites, setFavorites] = useState<string[]>([]);
     const { status } = useSession();
 
-    useEffect(() => {
-        const fetchProjects = async () => {
-            try {
-                const res = await fetch('/api/projects');
-                if (res.ok) {
-                    const data = await res.json();
-                    setProjects(data);
-                }
-            } catch (error) {
-                console.error('Failed to fetch projects', error);
-            } finally {
-                setLoading(false);
+    const fetchProjects = async () => {
+        try {
+            const res = await fetch('/api/projects');
+            if (res.ok) {
+                const data = await res.json();
+                setProjects(data);
             }
-        };
+        } catch (error) {
+            console.error('Failed to fetch projects', error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (status === 'authenticated') {
             fetchProjects();
         }
@@ -69,6 +69,28 @@ const ProjectsPage = () => {
 
     const toggleFavorite = (id: string) => {
         setFavorites(favs => favs.includes(id) ? favs.filter(f => f !== id) : [...favs, id]);
+    };
+
+    const handleArchive = async (id: string) => {
+        try {
+            const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                await fetchProjects();
+            }
+        } catch {}
+    };
+
+    const handleUnarchive = async (id: string) => {
+        try {
+            const res = await fetch(`/api/projects/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isArchived: false }),
+            });
+            if (res.ok) {
+                await fetchProjects();
+            }
+        } catch {}
     };
 
     if (loading || status === 'loading') {
@@ -134,6 +156,26 @@ const ProjectsPage = () => {
                                 >
                                     <StarIcon className="w-5 h-5" />
                                 </button>
+                                {/* Archive Button for Active Projects */}
+                                {!project.isArchived && statusFilter !== 'archived' && (
+                                    <button
+                                        className="absolute top-3 left-3 z-10 rounded-full p-1.5 bg-white/90 hover:bg-red-100 shadow transition-colors duration-200 text-gray-400 hover:text-red-500"
+                                        onClick={e => { e.stopPropagation(); e.preventDefault(); handleArchive(project._id as string); }}
+                                        title="Archive Project"
+                                    >
+                                        <TrashIcon className="w-5 h-5" />
+                                    </button>
+                                )}
+                                {/* Unarchive Button for Archived Projects */}
+                                {project.isArchived && statusFilter === 'archived' && (
+                                    <button
+                                        className="absolute top-3 left-3 z-10 rounded-full p-1.5 bg-white/90 hover:bg-green-100 shadow transition-colors duration-200 text-gray-400 hover:text-green-600"
+                                        onClick={e => { e.stopPropagation(); e.preventDefault(); handleUnarchive(project._id as string); }}
+                                        title="Unarchive Project"
+                                    >
+                                        <ArrowUturnUpIcon className="w-5 h-5" />
+                                    </button>
+                                )}
                                 <Link href={`/projects/${project._id}`} className="block">
                                     <Card className="hover:shadow-xl transition-shadow duration-200 cursor-pointer rounded-2xl border border-gray-100 bg-white group-hover:-translate-y-1 group-hover:scale-[1.01] shadow overflow-hidden p-4 flex flex-col gap-2 min-h-[210px]">
                                         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 rounded-t-2xl" />
