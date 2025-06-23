@@ -10,6 +10,7 @@ import {
   ClockIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline"
+import { useSession } from "next-auth/react"
 
 export function HeroSection() {
   const router = useRouter()
@@ -26,6 +27,8 @@ export function HeroSection() {
     triggerOnce: true,
     threshold: 0.1,
   })
+
+  const { status } = useSession()
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -90,7 +93,7 @@ export function HeroSection() {
             <Button
               size="lg"
               className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-              onClick={() => router.push("/signup")}
+              onClick={() => router.push(status === "authenticated" ? "/" : "/signup")}
             >
               Get Started
             </Button>

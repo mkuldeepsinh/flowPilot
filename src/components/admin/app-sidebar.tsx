@@ -19,6 +19,7 @@ import {
   IconUsers,
   IconCreditCard,
   IconLayoutSidebarLeftCollapse,
+  IconHome,
 } from "@tabler/icons-react"
 
 
@@ -36,6 +37,11 @@ import {
 
 const data = {
   navMain: [
+    {
+      title: "Home",
+      url: "/",
+      icon: IconHome,
+    },
     {
       title: "Dashboard",
       url: "/dashboard",

@@ -186,9 +186,9 @@ export function SectionCards() {
 
   const formatCurrency = (amount: number | null) => {
     if (amount === null) return "--"
-    return new Intl.NumberFormat('en-IN', {
+    return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'INR'
+      currency: 'USD'
     }).format(amount)
   }
 
