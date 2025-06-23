@@ -3,8 +3,25 @@
 import { useState, useEffect } from "react"
 import TransactionTable from "@/components/admin/transaction-table"
 
+interface Transaction {
+  _id: string;
+  date: string;
+  description: string;
+  category: string;
+  amount: number;
+  type: "income" | "expense";
+  status: "Completed" | "Pending";
+  account: string;
+  color: string;
+  client?: string;
+  vendor?: string;
+  invoice?: string;
+  department?: string;
+  payment_id?: string;
+}
+
 export default function TransactionsPage() {
-  const [transactions, setTransactions] = useState<any[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -20,8 +37,9 @@ export default function TransactionsPage() {
         } else {
           setError(data.message || "Failed to fetch transactions.")
         }
-      } catch (err: any) {
-        setError("Network error or failed to load transactions: " + err.message)
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+        setError("Network error or failed to load transactions: " + errorMessage)
       } finally {
         setLoading(false)
       }

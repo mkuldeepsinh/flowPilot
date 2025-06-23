@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import dbConnect from '@/dbConfing/dbConfing';
 import User from '@/models/userModel';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await dbConnect();
     const session = await getServerSession(authOptions);
@@ -20,7 +20,8 @@ export async function GET(request: NextRequest) {
     const users = await User.find({ companyId: currentUser.companyId }).select('id name email role');
 
     return NextResponse.json(users, { status: 200 });
-  } catch (error: any) {
-    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ message: 'Internal server error', error: errorMessage }, { status: 500 });
   }
 } 

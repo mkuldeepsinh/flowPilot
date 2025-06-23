@@ -6,7 +6,8 @@ import Task from "@/models/taskModel";
 import User from "@/models/userModel";
 import dbConnect from "@/dbConfing/dbConfing";
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
+    const params = await context.params;
     await dbConnect();
     try {
         const session = await getServerSession(authOptions);
@@ -24,13 +25,13 @@ export async function PUT(request: Request, { params }: { params: { id: string }
             return NextResponse.json({ message: "Task not found" }, { status: 404 });
         }
         
-        const project = task.project as any;
+        const project = task.project as { projectHead: { equals: (id: unknown) => boolean }; _id: unknown };
         const isProjectHead = project.projectHead.equals(user._id);
 
         const body = await request.json();
         const { name, description, assignedTo, status } = body;
 
-        let updateData: any = { name, description, assignedTo };
+        const updateData: Record<string, unknown> = { name, description, assignedTo };
 
         if (status) {
             if (user.role === 'admin' || user.role === 'owner' || isProjectHead) {
@@ -55,7 +56,8 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
+    const params = await context.params;
     await dbConnect();
     try {
         const session = await getServerSession(authOptions);
@@ -73,7 +75,7 @@ export async function DELETE(request: Request, { params }: { params: { id: strin
             return NextResponse.json({ message: "Task not found" }, { status: 404 });
         }
 
-        const project = task.project as any;
+        const project = task.project as { projectHead: { equals: (id: unknown) => boolean }; _id: unknown };
         const isProjectHead = project.projectHead.equals(user._id);
 
         if (user.role !== 'admin' && user.role !== 'owner' && !isProjectHead) {

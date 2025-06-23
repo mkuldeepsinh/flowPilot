@@ -1,4 +1,5 @@
 import Link from "next/link"
+import Image from "next/image"
 import { Mail, Phone, MapPin } from "lucide-react"
 
 export function Footer() {
@@ -9,7 +10,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="space-y-4 flex flex-col items-center">
             <Link href="/" className="flex items-center space-x-2 justify-center">
-              <img src="/logo.png" alt="FlowPilot Logo" className="h-8 w-8 object-contain mr-2" />
+              <Image src="/logo.png" alt="FlowPilot Logo" width={32} height={32} className="h-8 w-8 object-contain mr-2" />
               <span className="text-xl font-bold">FlowPilot</span>
             </Link>
             <p className="text-gray-400 text-sm max-w-xs">

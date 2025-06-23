@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { IProject } from '@/models/projectModel';
 import { Button } from '@/components/ui/button';
-import { PlusIcon, StarIcon, UserGroupIcon, ArrowsUpDownIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { Input } from '@/components/ui/input';
-import { useSession } from "next-auth/react";
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { PlusIcon, StarIcon, UserGroupIcon, ArrowsUpDownIcon } from '@heroicons/react/24/outline';
+import { IProject } from '@/models/projectModel';
 
 const getInitials = (name: string) => {
     if (!name) return '';
@@ -23,7 +23,7 @@ const ProjectsPage = () => {
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'archived'>('all');
     const [favorites, setFavorites] = useState<string[]>([]);
-    const { data: session, status } = useSession();
+    const { status } = useSession();
 
     useEffect(() => {
         const fetchProjects = async () => {
@@ -110,7 +110,7 @@ const ProjectsPage = () => {
                         <select
                             className="ml-2 rounded-lg border-gray-300 text-sm px-2 py-1 bg-white shadow focus:ring-2 focus:ring-blue-200"
                             value={sort}
-                            onChange={e => setSort(e.target.value as any)}
+                            onChange={e => setSort(e.target.value as 'name' | 'startDate' | 'endDate' | 'clientName')}
                         >
                             <option value="name">Name</option>
                             <option value="startDate">Start Date</option>
@@ -159,13 +159,16 @@ const ProjectsPage = () => {
                                             <div className="flex items-center gap-1 mb-1">
                                                 <UserGroupIcon className="w-4 h-4 text-blue-400" />
                                                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shadow">
-                                                    {getInitials((project.projectHead as any)?.name || 'PH')}
+                                                    {getInitials(typeof project.projectHead === 'object' && project.projectHead && 'name' in project.projectHead ? (project.projectHead as { name?: string }).name || 'PH' : 'PH')}
                                                 </span>
-                                                {(Array.isArray(project.employees) && project.employees.slice(0, 2).map((e: any) => (
-                                                    <span key={e._id as string} className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs shadow -ml-2 border-2 border-white">
-                                                        {getInitials(e.name || 'E')}
-                                                    </span>
-                                                )))}
+                                                {Array.isArray(project.employees) && project.employees.slice(0, 2).map((e: unknown, index: number) => {
+                                                    const employee = e as { _id: string; name?: string };
+                                                    return (
+                                                        <span key={employee._id || index} className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-xs shadow -ml-2 border-2 border-white">
+                                                            {getInitials(employee.name || 'E')}
+                                                        </span>
+                                                    );
+                                                })}
                                                 {Array.isArray(project.employees) && project.employees.length > 2 && (
                                                     <span className="ml-1 text-xs text-gray-400">+{project.employees.length - 2}</span>
                                                 )}
@@ -175,10 +178,10 @@ const ProjectsPage = () => {
                                                 <div className="mb-1">
                                                     <div className="flex items-center justify-between text-xs text-gray-500 mb-0.5">
                                                         <span>Progress</span>
-                                                        <span>{Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%</span>
+                                                        <span>{Math.round(((project.tasks as unknown as { status: string }[]).filter(t => t.status === 'Done').length / project.tasks.length) * 100)}%</span>
                                                     </div>
                                                     <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                                                        <div className="bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.round((project.tasks.filter((t: any) => t.status === 'Done').length / project.tasks.length) * 100)}%` }}></div>
+                                                        <div className="bg-gradient-to-r from-blue-500 via-indigo-400 to-purple-400 h-1.5 rounded-full transition-all duration-500" style={{ width: `${Math.round(((project.tasks as unknown as { status: string }[]).filter(t => t.status === 'Done').length / project.tasks.length) * 100)}%` }}></div>
                                                     </div>
                                                 </div>
                                             ) : (
@@ -209,4 +212,4 @@ const ProjectsPage = () => {
     );
 };
 
-export default ProjectsPage; 
+export default ProjectsPage;

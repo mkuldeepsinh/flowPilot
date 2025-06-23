@@ -1,7 +1,7 @@
 import type React from "react"
 import { useEffect, useState } from "react"
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react"
-import { ArrowDownRight, ArrowUpRight, DollarSign, Users, CreditCard, Briefcase } from "lucide-react"
+import { ArrowDownRight, ArrowUpRight, DollarSign, Briefcase } from "lucide-react"
 import Link from "next/link"
 
 import { Badge } from "@/components/ui/badge"
@@ -149,8 +149,8 @@ export function SectionCards() {
         const thisYear = now.getFullYear()
         const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1
         const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear
-        const thisMonthRevenue = transactions.filter((t:any) => t.type === "income" && new Date(t.date).getMonth() === thisMonth && new Date(t.date).getFullYear() === thisYear).reduce((sum:number, t:any) => sum + (t.amount || 0), 0)
-        const lastMonthRevenue = transactions.filter((t:any) => t.type === "income" && new Date(t.date).getMonth() === lastMonth && new Date(t.date).getFullYear() === lastMonthYear).reduce((sum:number, t:any) => sum + (t.amount || 0), 0)
+        const thisMonthRevenue = transactions.filter((t: { type: string; date: string }) => t.type === "income" && new Date(t.date).getMonth() === thisMonth && new Date(t.date).getFullYear() === thisYear).reduce((sum: number, t: { amount?: number }) => sum + (t.amount || 0), 0)
+        const lastMonthRevenue = transactions.filter((t: { type: string; date: string }) => t.type === "income" && new Date(t.date).getMonth() === lastMonth && new Date(t.date).getFullYear() === lastMonthYear).reduce((sum: number, t: { amount?: number }) => sum + (t.amount || 0), 0)
         let rate: number|null = null
         let trend: 'up'|'down' = 'up'
         let change = ''
@@ -170,9 +170,9 @@ export function SectionCards() {
         setGrowthRate({rate, trend, change})
 
         // Active projects: not archived
-        const activeProjects = Array.isArray(projects) ? projects.filter((p:any) => !p.isArchived) : []
+        const activeProjects = Array.isArray(projects) ? projects.filter((p: { isArchived?: boolean }) => !p.isArchived) : []
         setActiveProjectsCount(activeProjects.length)
-      } catch (e) {
+      } catch {
         setBankBalance(null)
         setTotalRevenue(null)
         setGrowthRate({rate: null, trend: 'up', change: ''})

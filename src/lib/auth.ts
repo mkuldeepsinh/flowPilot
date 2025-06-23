@@ -18,11 +18,17 @@ declare module "next-auth" {
   interface Session {
     user: UserSession;
   }
-  interface User extends UserSession {}
+  interface User extends UserSession {
+    // Extend the User type with additional properties if needed
+    [key: string]: unknown;
+  }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT extends UserSession {}
+  interface JWT extends UserSession {
+    // Extend the JWT type with additional properties if needed
+    [key: string]: unknown;
+  }
 }
 
 export const authOptions: NextAuthOptions = {

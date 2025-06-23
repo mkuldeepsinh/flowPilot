@@ -17,22 +17,23 @@ export async function getDashboardTransactions(companyId: string) {
 
     const transactions = await Transaction.find({ companyId: companyId }).lean();
     
-    const formattedTransactions: TransactionSchema[] = transactions.map((t: any) => ({
-      _id: t._id.toString(),
-      date: new Date(t.date).toISOString().split('T')[0],
-      description: t.description,
-      category: t.category,
-      amount: t.amount,
-      type: t.type,
-      status: t.status,
-      account: t.account,
-      color: t.color,
-      client: t.client,
-      vendor: t.vendor,
-      invoice: t.invoice,
-      department: t.department,
-      payment_id: t.payment_id
+    const formattedTransactions: TransactionSchema[] = transactions.map((t: Record<string, unknown>) => ({
+      _id: (t._id as string).toString(),
+      date: new Date(t.date as string).toISOString().split('T')[0],
+      description: t.description as string,
+      category: t.category as string,
+      amount: t.amount as number,
+      type: t.type as "income" | "expense",
+      status: t.status as "Completed" | "Pending",
+      account: t.account as string,
+      color: t.color as string,
+      client: t.client as string,
+      vendor: t.vendor as string,
+      invoice: t.invoice as string,
+      department: t.department as string,
+      payment_id: t.payment_id as string
     }));
+
 
     return formattedTransactions;
   } catch (error) {

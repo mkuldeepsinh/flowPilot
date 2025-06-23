@@ -1,7 +1,6 @@
 "use client"
 
 import { ChartAreaInteractive } from "@/components/admin/chart-area-interactive"
-import { DataTable } from "@/components/admin/data-table"
 import { SectionCards } from "@/components/admin/section-cards"
 import { useState, useEffect } from "react"
 
@@ -39,7 +38,7 @@ export default function Page() {
 
   if (loading) {
     console.log('Dashboard Page: Displaying loading state');
-    return <div>Loading dashboard data...</div> // Or a proper loading spinner
+    return <div>Loading dashboard data...</div>
   }
 
   if (!companyId) {

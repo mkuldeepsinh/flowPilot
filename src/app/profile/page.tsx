@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +31,7 @@ function ProfilePage() {
     onUnauthenticated() {
       router.push('/signup');
     },
-  }) as { data: any; status: 'authenticated' | 'loading' | 'unauthenticated' };
+  }) as { data: { user?: { email?: string } } | null; status: 'authenticated' | 'loading' | 'unauthenticated' };
 
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -128,7 +129,7 @@ function ProfilePage() {
     });
   };
 
-  const isPremium = userProfile?.role === 'owner' || userProfile?.role === 'admin';
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-100 to-white relative overflow-x-hidden">
@@ -150,7 +151,7 @@ function ProfilePage() {
             </Avatar>
           </div>
           <h1 className="mt-6 text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-blue-700 to-indigo-700 bg-clip-text text-transparent drop-shadow-lg">Welcome, {userProfile?.email?.split('@')[0] || 'User'}!</h1>
-          <p className="text-gray-500 mt-2 text-lg">Here's your account overview</p>
+          <p className="text-gray-500 mt-2 text-lg">Here&apos;s your account overview</p>
         </motion.div>
 
         <motion.div
@@ -253,7 +254,7 @@ function ProfilePage() {
             © {new Date().getFullYear()} FlowPilot. All rights reserved.
           </div>
           <div className="flex gap-3 justify-center md:justify-end">
-            <a href="/" className="text-blue-600 hover:underline text-sm">Home</a>
+            <Link href="/" className="text-blue-600 hover:underline text-sm">Home</Link>
             <a href="/dashboard" className="text-blue-600 hover:underline text-sm">Dashboard</a>
             <a href="/profile" className="text-blue-600 hover:underline text-sm">Profile</a>
           </div>

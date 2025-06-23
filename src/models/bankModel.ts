@@ -73,6 +73,6 @@ bankSchema.methods.updateAmount = function(amount: number) {
   return this.save();
 };
 
-const Bank = (mongoose.models.Bank || mongoose.model<IBank, IBankModel>('Bank', bankSchema)) as IBankModel;
+const Bank = (mongoose.models.Bank as unknown as IBankModel) || mongoose.model<IBank, IBankModel>('Bank', bankSchema);
 
 export default Bank; 

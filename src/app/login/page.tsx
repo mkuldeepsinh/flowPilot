@@ -1,9 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { Mail, Lock, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface FormData {
   email: string;
@@ -15,7 +14,6 @@ interface FormErrors {
 }
 
 export default function Login() {
-  const router = useRouter();
   const [formData, setFormData] = useState<FormData>({
     email: '',
     password: '',
@@ -72,8 +70,9 @@ export default function Login() {
 
       // Redirect to home page with full URL
       window.location.href = 'http://localhost:3000/';
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login');
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during login'
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -83,7 +82,7 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-xl">
         <div className="flex justify-center mt-8 mb-4">
-          <img src="/logo.png" alt="FlowPilot Logo" className="h-16 w-16 object-contain" />
+          <Image src="/logo.png" alt="FlowPilot Logo" width={64} height={64} className="h-16 w-16 object-contain" />
         </div>
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
@@ -155,7 +154,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>

@@ -28,7 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { useRouter } from "next/navigation"
+
 import { useState } from "react"
 import { signOut } from "next-auth/react"
 import { UserAccountDrawer } from "./user-account-drawer"
@@ -47,7 +47,6 @@ export function NavUser({
   }
 }) {
   const { isMobile } = useSidebar()
-  const router = useRouter()
   const [isAccountDrawerOpen, setIsAccountDrawerOpen] = useState(false)
 
   const handleLogout = async () => {

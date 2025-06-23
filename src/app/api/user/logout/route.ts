@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Clear the token cookie by setting its expiration to a past date
     (await cookies()).set({
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ message: 'Logout successful' }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Logout error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
