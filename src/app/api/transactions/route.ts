@@ -6,14 +6,9 @@ import { authOptions } from "@/lib/auth";
 import dbConnect from "@/dbConfing/dbConfing";
 import User from "@/models/userModel";
 import Bank from "@/models/bankModel";
-// import { mockCompany } from "@/lib/dashboard"; // This will be removed as we'll use dynamic companyId
-import { cookies } from 'next/headers';
-import { verify } from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Default colors for different categories
-export const categoryColors: Record<string, string> = {
+const categoryColors: Record<string, string> = {
   Revenue: "#22C55E",
   Payroll: "#3B82F6",
   Operations: "#6B7280",
@@ -26,7 +21,7 @@ export const categoryColors: Record<string, string> = {
   Other: "#6B7280"
 };
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await dbConnect();
     const session = await getServerSession(authOptions);

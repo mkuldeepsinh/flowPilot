@@ -12,7 +12,6 @@ import {
   IconFileWord,
   IconFolder,
   IconHelp,
-  IconInnerShadowTop,
   IconListDetails,
   IconReport,
   IconSearch,
@@ -22,7 +21,7 @@ import {
   IconLayoutSidebarLeftCollapse,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from "@/components/admin/nav-documents"
+
 import { NavMain } from "@/components/admin/nav-main"
 import { NavSecondary } from "@/components/admin/nav-secondary"
 import { NavUser } from "@/components/admin/nav-user"
@@ -32,10 +31,7 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
-  SidebarGroup,
-  SidebarGroupLabel,
 } from "@/components/ui/sidebar"
 
 const data = {
@@ -172,7 +168,7 @@ export function AppSidebar({
   ...props 
 }: React.ComponentProps<typeof Sidebar> & { 
   companyName: string, 
-  fullUserProfile: any,
+  fullUserProfile: { name?: string; email?: string; role?: string },
   onSearchClick?: () => void
 }) {
   return (
@@ -195,7 +191,14 @@ export function AppSidebar({
         <NavSecondary items={data.navSecondary} onSearchClick={onSearchClick} />
       </SidebarContent>
       <SidebarFooter className="bg-[#f6f9ff] rounded-none shadow-none p-4 border-t border-gray-100 mt-4">
-        <NavUser user={fullUserProfile} />
+        <NavUser user={{
+          name: fullUserProfile.name || 'User',
+          email: fullUserProfile.email || 'user@example.com',
+          avatar: '/default-avatar.png',
+          role: fullUserProfile.role || 'user',
+          companyId: 'default',
+          companyName: 'Company'
+        }} />
       </SidebarFooter>
     </Sidebar>
   )

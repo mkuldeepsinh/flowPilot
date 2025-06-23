@@ -2,13 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { IProject, IProject as ProjectWithTasks } from '@/models/projectModel';
 import { ITask } from '@/models/taskModel';
 import { IUser } from '@/models/userModel';
+
+interface ProjectWithTasks {
+  _id: string;
+  name: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  clientName: string;
+  totalRevenue: number;
+  cost: number;
+  projectHead: IUser | string;
+  tasks: ITask[];
+  employees: IUser[];
+}
 import { useSession } from "next-auth/react";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Link from 'next/link';
 import { CheckCircleIcon, UserGroupIcon, CalendarIcon, CurrencyDollarIcon, ClipboardDocumentListIcon, ArrowTrendingUpIcon, UsersIcon, PlusIcon, ClockIcon } from '@heroicons/react/24/outline';
@@ -71,10 +82,10 @@ const ProjectDetailsPage = () => {
         return <div>Project not found</div>;
     }
 
-    const tasks = Array.isArray(project.tasks) && typeof project.tasks[0] === 'object' && 'name' in (project.tasks[0] as any)
+    const tasks = Array.isArray(project.tasks) && project.tasks.length > 0 && typeof project.tasks[0] === 'object' && 'name' in project.tasks[0]
         ? ((project.tasks as unknown) as ITask[])
         : [];
-    const employees = Array.isArray(project.employees) && typeof project.employees[0] === 'object' && 'name' in (project.employees[0] as any)
+    const employees = Array.isArray(project.employees) && project.employees.length > 0 && typeof project.employees[0] === 'object' && 'name' in project.employees[0]
         ? ((project.employees as unknown) as IUser[])
         : [];
     const progress = getProjectProgress(tasks);
@@ -82,7 +93,6 @@ const ProjectDetailsPage = () => {
     const groupedTasks = groupTasksByStatus(tasks);
 
     const STATUSES = ['To Do', 'In Progress', 'Done'] as const;
-    type StatusType = typeof STATUSES[number];
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-white pb-16">
@@ -98,9 +108,9 @@ const ProjectDetailsPage = () => {
                             <div className="flex items-center gap-2 mt-2">
                                 <span className="font-semibold text-indigo-100 text-sm">Project Head:</span>
                                 <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 font-bold text-xs shadow">
-                                    {getInitials((project.projectHead as any)?.name || 'PH')}
+                                    {getInitials(typeof project.projectHead === 'object' ? project.projectHead.name || 'PH' : 'PH')}
                                 </span>
-                                <span className="text-indigo-100 font-medium text-sm">{(project.projectHead as any)?.name || 'N/A'}</span>
+                                <span className="text-indigo-100 font-medium text-sm">{typeof project.projectHead === 'object' ? project.projectHead.name || 'N/A' : 'N/A'}</span>
                             </div>
                         </div>
                     </div>
@@ -185,7 +195,7 @@ const ProjectDetailsPage = () => {
                                                         {task.name}
                                                     </div>
                                                     <div className="text-gray-600 text-xs">{task.description}</div>
-                                                    <div className="text-xs text-gray-500">Assigned to: {(task.assignedTo as any)?.name || 'Unassigned'}</div>
+                                                    <div className="text-xs text-gray-500">Assigned to: {typeof task.assignedTo === 'object' && task.assignedTo && 'name' in task.assignedTo ? (task.assignedTo as { name?: string }).name || 'Unassigned' : 'Unassigned'}</div>
                                                     {task.completionDate && <div className="text-xs text-green-600">Completed: {new Date(task.completionDate).toLocaleDateString()}</div>}
                                                     {(canMarkTaskComplete || session?.user.role === 'admin' || session?.user.role === 'owner') && (
                                                         <Select value={task.status} onValueChange={(value) => handleTaskStatusChange(task._id as string, value)}>
@@ -246,7 +256,7 @@ const getProjectProgress = (tasks: ITask[]) => {
 
 const getTaskTimeline = (tasks: ITask[]) => {
     // Flatten events: creation, status changes, completion
-    let events: { date: Date, label: string, icon: React.ReactNode, task: ITask }[] = [];
+    const events: { date: Date, label: string, icon: React.ReactNode, task: ITask }[] = [];
     tasks.forEach(task => {
         events.push({
             date: new Date(task.createdAt),

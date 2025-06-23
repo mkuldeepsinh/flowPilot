@@ -26,13 +26,12 @@ export default function EmployeesPage() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string>('pending');
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
-  const [statusFilter, setStatusFilter] = useState<'approved' | 'pending' | 'rejected'>('pending');
 
   const fetchEmployees = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch('/api/user/employees');
       const data = await res.json();
@@ -41,7 +40,7 @@ export default function EmployeesPage() {
       } else {
         setError(data.message || 'Failed to fetch employees');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to fetch employees');
     }
     setLoading(false);
@@ -89,7 +88,7 @@ export default function EmployeesPage() {
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Employees</h1>
       <div className="flex items-center justify-between mb-4 px-4 lg:px-6 max-w-full">
-        <Tabs value={statusFilter} onValueChange={v => { setStatusFilter(v as any); setPageIndex(0); }} className="">
+        <Tabs value={statusFilter} onValueChange={v => { setStatusFilter(v as string); setPageIndex(0); }} className="">
           <TabsList>
             <TabsTrigger value="approved">Approved</TabsTrigger>
             <TabsTrigger value="pending">Pending</TabsTrigger>

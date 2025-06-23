@@ -20,25 +20,21 @@ import {
   IconChevronRight,
   IconChevronsLeft,
   IconChevronsRight,
-  IconCircleCheckFilled,
   IconDotsVertical,
   IconLayoutColumns,
-  IconLoader,
   IconPencil,
   IconPlus,
 } from "@tabler/icons-react"
 
-import { Badge } from "@/components/ui/badge"
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -57,7 +53,6 @@ import {
 } from "@/components/ui/table"
 import {
   Tabs,
-  TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs"
@@ -70,7 +65,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
+
 } from "@/components/ui/drawer"
 import { Separator } from "@/components/ui/separator"
 import { TransactionForm } from "./transaction-form"
@@ -223,7 +218,7 @@ export default function TransactionTable({ data: initialData }: TransactionTable
     pageSize: 10,
   })
   const [selectedTransaction, setSelectedTransaction] = React.useState<z.infer<typeof schema> | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+  const [, setIsDrawerOpen] = React.useState(false);
   const [transactionToDelete, setTransactionToDelete] = React.useState<z.infer<typeof schema> | null>(null);
   const [transactionToEdit, setTransactionToEdit] = React.useState<z.infer<typeof schema> | null>(null);
   const [isNewTransactionFormOpen, setIsNewTransactionFormOpen] = React.useState(false);
@@ -390,7 +385,7 @@ export default function TransactionTable({ data: initialData }: TransactionTable
           ),
         },
       ],
-      [categoryColors]
+      []
     ),
     state: {
       sorting,

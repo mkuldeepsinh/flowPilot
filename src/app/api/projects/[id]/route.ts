@@ -3,10 +3,9 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Project from "@/models/projectModel";
 import User from "@/models/userModel";
-import Task from "@/models/taskModel";
 import dbConnect from "@/dbConfing/dbConfing";
 
-export async function GET(request: Request, context: { params: { id: string } }) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
     await dbConnect();
     try {
         const { params } = context;
@@ -33,8 +32,9 @@ export async function GET(request: Request, context: { params: { id: string } })
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        const isEmployeeInProject = project.employees?.some((employee: any) => employee._id.equals(user._id));
-        const isProjectHead = project.projectHead?._id.equals(user._id);
+        const isEmployeeInProject = project.employees?.some((employee: { _id: string }) => 
+            employee._id.toString() === user._id.toString());
+        const isProjectHead = project.projectHead?._id.toString() === user._id.toString();
 
         if (user.role !== 'admin' && user.role !== 'owner' && !isEmployeeInProject && !isProjectHead) {
             return NextResponse.json({ message: "Forbidden" }, { status: 403 });
@@ -47,7 +47,7 @@ export async function GET(request: Request, context: { params: { id: string } })
     }
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
     await dbConnect();
     try {
         const { params } = context;
@@ -78,7 +78,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
         
         // Fields editable by project head, admin, or owner
         const { name, description, startDate, endDate, clientName, employees } = body;
-        const updateData: any = { name, description, startDate, endDate, clientName, employees };
+        const updateData: Record<string, unknown> = { name, description, startDate, endDate, clientName, employees };
         
         // Fields editable only by admin or owner
         if (user.role === 'admin' || user.role === 'owner') {
@@ -96,7 +96,7 @@ export async function PUT(request: Request, context: { params: { id: string } })
     }
 }
 
-export async function DELETE(request: Request, context: { params: { id: string } }) {
+export async function DELETE(request: Request, context: { params: Promise<{ id: string }> }) {
     await dbConnect();
     try {
         const { params } = context;

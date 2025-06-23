@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { IconPlus, IconBuilding, IconCreditCard, IconWallet } from "@tabler/icons-react"
+import { IconPlus, IconBuilding } from "@tabler/icons-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -53,8 +53,9 @@ export default function BanksPage() {
       } else {
         setError(data.error || "Failed to fetch banks.")
       }
-    } catch (err: any) {
-      setError("Network error or failed to load banks: " + err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      setError("Network error or failed to load banks: " + errorMessage)
     } finally {
       setLoading(false)
     }
@@ -88,8 +89,9 @@ export default function BanksPage() {
         const data = await response.json()
         setError(data.error || "Failed to delete bank.")
       }
-    } catch (err: any) {
-      setError("Network error or failed to delete bank: " + err.message)
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error'
+      setError("Network error or failed to delete bank: " + errorMessage)
     } finally {
       setDeleteDialogOpen(false)
       setBankToDelete(null)
@@ -134,7 +136,7 @@ export default function BanksPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Bank Management</h1>
-          <p className="text-gray-600 mt-2">Manage your company's bank accounts and track balances</p>
+          <p className="text-gray-600 mt-2">Manage your company&apos;s bank accounts and track balances</p>
         </div>
         <Button onClick={() => setIsAddDialogOpen(true)} className="flex items-center gap-2 mt-2 md:mt-0 px-6 py-3 text-base">
           <IconPlus size={20} />
@@ -198,7 +200,7 @@ export default function BanksPage() {
                     className="flex-1"
                     onClick={() => {
                       // TODO: Implement edit functionality
-                      console.log('Edit bank:', bank._id)
+                      console.log("Edit bank:", bank.bankName)
                     }}
                   >
                     Edit
@@ -220,7 +222,7 @@ export default function BanksPage() {
 
       {/* Add Bank Dialog */}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] p-6">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Add New Bank Account</DialogTitle>
           </DialogHeader>
@@ -230,17 +232,16 @@ export default function BanksPage() {
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent className="p-6">
+        <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the bank account
-              "{bankToDelete?.bankName}" and all associated data.
+              This action cannot be undone. This will permanently delete the bank account &quot;{bankToDelete?.bankName}&quot;.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+            <AlertDialogAction onClick={handleDeleteConfirm}>
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -3,7 +3,6 @@ import dbConnect from '../../../../dbConfing/dbConfing';
 import User from '../../../../models/userModel';
 import Company from '../../../../models/companyModel';
 import { validateSignupData } from '../../../../helpers/validation';
-import { hash } from 'bcryptjs';
 
 function generateCompanyId() {
     return `COMP_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -151,11 +150,12 @@ export async function POST(request: NextRequest) {
       }, { status: 201 });
     }
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Signup error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ 
       message: 'Internal server error',
-      error: error.message 
+      error: errorMessage 
     }, { status: 500 });
   }
 }

@@ -1,20 +1,19 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, Building2, Users, LogIn, UserPlus, Shield, Lock, Mail } from "lucide-react"
+import { Loader2, Building2, Users, LogIn, UserPlus, Lock, Mail } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { signIn } from 'next-auth/react'
-import User from '@/models/userModel'
+import Image from 'next/image'
 
 interface FormData {
   email: string
@@ -210,7 +209,7 @@ export default function AuthPage() {
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.2 }}
             >
-              <img src="/logo.png" alt="FlowPilot Logo" className="h-14 w-14 mx-auto object-contain" />
+              <Image src="/logo.png" alt="FlowPilot Logo" width={56} height={56} className="h-14 w-14 mx-auto object-contain" />
             </motion.div>
             <CardTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
               Welcome to FlowPilot

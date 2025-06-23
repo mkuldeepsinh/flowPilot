@@ -7,7 +7,7 @@ export function DashboardShowcase() {
         Your Finance Dashboard, Reimagined
       </h2>
       <p className="text-lg md:text-xl text-slate-600 mb-10 text-center max-w-2xl">
-        Experience a modern, intuitive, and powerful dashboard to manage your company's finances. Visualize, analyze, and act—all in one place.
+        Experience a modern, intuitive, and powerful dashboard to manage your company&apos;s finances. Visualize, analyze, and act—all in one place.
       </p>
       <div className="relative group" style={{ perspective: 1200 }}>
         <div

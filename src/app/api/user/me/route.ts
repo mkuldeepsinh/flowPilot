@@ -1,14 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { verify } from 'jsonwebtoken';
-import dbConnect from '../../../../dbConfing/dbConfing';
 import User from '../../../../models/userModel';
 import Company from '../../../../models/companyModel';
 import mongoose from 'mongoose';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(process.env.MONGO_URL!);
@@ -20,10 +19,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized: No token provided' }, { status: 401 });
     }
 
-    let decodedToken: any;
+    let decodedToken: { id: string };
     try {
-      decodedToken = verify(token, JWT_SECRET);
-    } catch (error) {
+      decodedToken = verify(token, JWT_SECRET) as { id: string };
+    } catch {
       return NextResponse.json({ message: 'Unauthorized: Invalid token' }, { status: 401 });
     }
 
@@ -53,7 +52,7 @@ export async function GET(request: NextRequest) {
       },
     }, { status: 200 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Fetch user/company data error:', error);
     return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
