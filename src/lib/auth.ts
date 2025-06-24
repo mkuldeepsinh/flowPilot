@@ -33,14 +33,13 @@ declare module "next-auth/jwt" {
 
 export const authOptions: NextAuthOptions = {
   debug: false,
-  useSecureCookies: process.env.NODE_ENV === "production",
   session: {
     strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
-    signIn: "/login",
-    error: "/login",
+    signIn: "/signup",
+    error: "/signup",
   },
   providers: [
     CredentialsProvider({
