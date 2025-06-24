@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface FormData {
   email: string;
@@ -21,6 +22,7 @@ export default function Login() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -69,7 +71,7 @@ export default function Login() {
       }
 
       // Redirect to home page with full URL
-      window.location.href = 'http://localhost:3000/';
+      router.push('/dashboard');
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during login'
       setError(errorMessage);
